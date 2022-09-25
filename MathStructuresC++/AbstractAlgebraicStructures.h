@@ -230,22 +230,22 @@ public:
 /// (T, +) is a CommutativeMonoid, which means that it lacks being a CommutativeGroup because it is not having an additive
 /// inverse.
 /// (T, *) is a Monoid
-/// a in T, a * 0 = 0 * a = 0 -> Multiplication by zero annihilates a in T
+/// a in T, a * 0 = 0 * a = 0 -> Multiplication by zero (CommutativeMonoid identity) annihilates a in T
 template <typename T>
 class SemiRing: public IDistributive<T>{
-    const CommutativeMonoid<T>& group;
+    const CommutativeMonoid<T>& commutativeMonoid;
     const Monoid<T>& monoid;
-    const T zero;
 
 public:
-    SemiRing(const CommutativeMonoid<T>& group, const Monoid<T>& monoid, const T& zero): IDistributive<T>([&group](T x, T y) -> T {
+    SemiRing(const CommutativeMonoid<T>& group, const Monoid<T>& monoid): IDistributive<T>([&group](T x, T y) -> T {
         return group.op(x, y); //is there an elegant way | or a right way
     }, [&monoid](T x, T y) -> T {
         return monoid.op(x, y); //is there an elegant way | or a right way
-    }), group(group), monoid(monoid), zero(zero) {}
+    }), commutativeMonoid(group), monoid(monoid) {}
 
     bool doesZeroAnnihilates(T a) const {
-        return monoid.op(a, zero) == 0 && monoid.op(zero, a) == zero;
+        return monoid.op(a, commutativeMonoid.identity()) == 0 &&
+            monoid.op(commutativeMonoid.identity(), a) == commutativeMonoid.identity();
     }
 
 };

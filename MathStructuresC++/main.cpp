@@ -122,7 +122,7 @@ public:
 
 class NaturalNumberSemiRing: public SemiRing<NaturalNumber> {
 public:
-    NaturalNumberSemiRing(const CommutativeMonoid<NaturalNumber>& group, const Monoid<NaturalNumber>& monoid): SemiRing<NaturalNumber>(group, monoid, monoid.identity()){};
+    NaturalNumberSemiRing(const CommutativeMonoid<NaturalNumber>& group, const Monoid<NaturalNumber>& monoid): SemiRing<NaturalNumber>(group, monoid){};
 };
 
 void testIntSemiGroup();
@@ -338,8 +338,8 @@ void testNSemiRing() {
     const NaturalNumberMonoid monoid;
     const NaturalNumberSemiRing ring(cMonoid, monoid);
 
-    int i = 0;
-    auto gen = [&, i]() mutable -> int {
+    NaturalNumber i = 0;
+    auto gen = [&, i]() mutable -> NaturalNumber {
         i = i + 1;
         return i;
     };
@@ -348,5 +348,6 @@ void testNSemiRing() {
     std::cout << "NaturalNumberSemiRing -> IsLeftDistributive? " << (res1 ? "true" : "false") << std::endl;
     auto res2 = ring.isRightDistributive(gen);
     std::cout << "NaturalNumberSemiRing -> IsRightDistributive? " << (res2 ? "true" : "false") << std::endl;
+    std::cout << "NaturalNumberSemiRing -> a * Zero (Zero -> Identity of (T, +))? " << (ring.doesZeroAnnihilates(gen()) ? "true" : "false") << std::endl;
     std::cout << std::endl;
 }
