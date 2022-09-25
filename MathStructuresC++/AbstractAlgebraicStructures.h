@@ -5,6 +5,9 @@
 #ifndef MATHSTRUCTURESC___ABSTRACTALGEBRAICSTRUCTURES_H
 #define MATHSTRUCTURESC___ABSTRACTALGEBRAICSTRUCTURES_H
 
+/// BinaryOperationWithoutClosure
+/// \tparam T
+/// \tparam R
 template <typename T, typename R>
 class BinaryOperationWithoutClosure {
 public:
@@ -15,6 +18,9 @@ public:
     virtual R op(const T& operand1, const T& operand2) const = 0;
 };
 
+/// BinaryOperation also known as Magma (T, op)
+/// If op is partially defined then this structure is called a PartialMagma or PartialBinaryOperation
+/// \tparam T
 template <typename T>
 class BinaryOperation: public BinaryOperationWithoutClosure<T, T>{
 public:
@@ -27,6 +33,8 @@ public:
     virtual T op(const T& operand1, const T& operand2) const = 0;
 };
 
+/// IAssociative represents the associativity property of operation op()
+/// \tparam T
 template <typename T>
 class IAssociative: public virtual BinaryOperation<T>{
 public:
@@ -57,6 +65,8 @@ public:
 template <typename T>
 class SemiGroup: public virtual BinaryOperation<T>, public IAssociative<T>{};
 
+/// ICommutative represents the commutativity property of operation op()
+/// \tparam T
 template <typename T>
 class ICommutative: public virtual BinaryOperation<T> {
 public:
@@ -74,11 +84,14 @@ public:
     }
 };
 
+/// CommutativeSemiGroup has the following axioms
 /// Also known as AbelianSemiGroup
 /// \tparam T
 template <typename T>
 class CommutativeSemiGroup: public SemiGroup<T>, public ICommutative<T>{};
 
+/// Monoid has the following axioms
+/// \tparam T
 template <typename T>
 class Monoid: public SemiGroup<T> {
 public:
@@ -87,6 +100,8 @@ public:
     virtual T identity() const = 0;
 };
 
+/// CommutativeMonoid has the following axioms
+/// \tparam T
 template <typename T>
 class CommutativeMonoid: public Monoid<T>, public ICommutative<T> {
 public:
@@ -95,6 +110,8 @@ public:
     virtual T identity() const = 0;
 };
 
+/// Group has the following axioms
+/// \tparam T
 template <typename T>
 class Group: public Monoid<T> {
 public:
@@ -104,15 +121,17 @@ public:
 };
 
 /// Also known as AbelianGroup
+/// CommutativeGroup has the following axioms
 template <typename T>
 class CommutativeGroup: public Group<T>, public ICommutative<T>{};
 
-
+/// IDistributive represents the properties left distributivity & right distributivity of op2 over op1
+/// \tparam T
 template <typename T>
 class IDistributive {
 protected:
-    const std::function<T(T, T)>& op1;
-    const std::function<T(T, T)>& op2;
+    const std::function<T(T, T)> op1;
+    const std::function<T(T, T)> op2;
 
 public:
     IDistributive(const std::function<T(T, T)>& op1, const std::function<T(T, T)>& op2): op1(op1), op2(op2) {}
@@ -146,6 +165,12 @@ public:
     }
 };
 
+/// Ring is a triple (T, +, *), where T is a Set
+/// Ring has the following axioms
+/// (T, +) is a CommutativeGroup
+/// (T, *) is a CommutativeMonoid
+/// * is distributive over + (Both left & right)
+/// \tparam T
 template <typename T>
 class Ring: public IDistributive<T>{
     const CommutativeGroup<T>& group;
@@ -159,14 +184,52 @@ public:
     }), group(group), monoid(monoid) {
     }
 
-    CommutativeGroup<T> &getGroup() {
-        return group;
-    }
-
-    Monoid<T> &getMonoid() {
-        return monoid;
-    }
 };
 
+/// CommutativeRing is a triple (T, +, *), where T is a Set
+/// Ring has the following axioms
+/// (T, +) is a CommutativeGroup
+/// (T, *) is a CommutativeMonoid
+/// * is distributive over + (In a commutative ring left distributivity implies right and vice versa)
+/// \tparam T
+template <typename T>
+class CommutativeRing: public IDistributive<T>{
+    const CommutativeGroup<T>& group;
+    const CommutativeMonoid<T>& monoid;
+
+public:
+    CommutativeRing(const CommutativeGroup<T>& group, const CommutativeMonoid<T>& monoid): IDistributive<T>([&group](T x, T y) -> T {
+        return group.op(x, y); //is there an elegant way | or a right way
+    }, [&monoid](T x, T y) -> T {
+        return monoid.op(x, y); //is there an elegant way | or a right way
+    }), group(group), monoid(monoid) {
+    }
+
+};
+
+/// SemiRing is a tripe (T, +, *), where T is a Set
+/// SemiRing has the following axioms
+/// (T, +) is a CommutativeMonoid, which means that it lacks being a CommutativeGroup because it is not having an additive
+/// inverse.
+/// (T, *) is a Monoid
+/// a in T, a * 0 = 0 * a = 0 -> Multiplication by zero annihilates a in T
+template <typename T>
+class SemiRing: public IDistributive<T>{
+    const CommutativeMonoid<T>& group;
+    const Monoid<T>& monoid;
+    const T zero;
+
+public:
+    SemiRing(const CommutativeMonoid<T>& group, const Monoid<T>& monoid, const T& zero): IDistributive<T>([&group](T x, T y) -> T {
+        return group.op(x, y); //is there an elegant way | or a right way
+    }, [&monoid](T x, T y) -> T {
+        return monoid.op(x, y); //is there an elegant way | or a right way
+    }), group(group), monoid(monoid), zero(zero) {}
+
+    bool doesZeroAnnihilates(T a) const {
+        return monoid.op(a, zero) == 0 && monoid.op(zero, a) == zero;
+    }
+
+};
 
 #endif //MATHSTRUCTURESC___ABSTRACTALGEBRAICSTRUCTURES_H
