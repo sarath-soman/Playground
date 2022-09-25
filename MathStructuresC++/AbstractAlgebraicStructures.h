@@ -152,7 +152,7 @@ class Ring: public IDistributive<T>{
     const Monoid<T>& monoid;
 
 public:
-    Ring(CommutativeGroup<T>& group, Monoid<T>& monoid): IDistributive<T>([&group](T x, T y) -> T {
+    Ring(const CommutativeGroup<T>& group, const Monoid<T>& monoid): IDistributive<T>([&group](T x, T y) -> T {
         return group.op(x, y); //is there an elegant way | or a right way
     }, [&monoid](T x, T y) -> T {
         return monoid.op(x, y); //is there an elegant way | or a right way
