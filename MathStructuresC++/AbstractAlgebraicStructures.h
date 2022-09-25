@@ -38,7 +38,7 @@ public:
 template <typename T>
 class IAssociative: public virtual BinaryOperation<T>{
 public:
-    /// a,b,c in T => op(op(a, b), c) = op(a, op(b, c))
+    /// a,b,c ∈ T => op(op(a, b), c) = op(a, op(b, c))
     /// Associativity is closed downwards which means that if R ⊆ T then op is associative under R
     /// \tparam FN
     /// \param generator
@@ -62,6 +62,10 @@ public:
     }
 };
 
+/// Semigroup has the following axioms
+/// a,b,c ∈ T is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// Associativity is closed downwards which means that if R ⊆ T then op is associative under R
+/// \tparam T
 template <typename T>
 class SemiGroup: public virtual BinaryOperation<T>, public IAssociative<T>{};
 
@@ -70,7 +74,7 @@ class SemiGroup: public virtual BinaryOperation<T>, public IAssociative<T>{};
 template <typename T>
 class ICommutative: public virtual BinaryOperation<T> {
 public:
-    /// a,b in T => op(a, b) = op(b, a)
+    /// a,b ∈ T => op(a, b) = op(b, a)
     /// \param generator
     /// \return
     bool isCommutative(const std::function<T()> generator) const {
@@ -85,12 +89,16 @@ public:
 };
 
 /// CommutativeSemiGroup has the following axioms
+/// a,b,c ∈ T op is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// a,b ∈ T op is Commutative => op(a, b) = op(b, a)
 /// Also known as AbelianSemiGroup
 /// \tparam T
 template <typename T>
 class CommutativeSemiGroup: public SemiGroup<T>, public ICommutative<T>{};
 
 /// Monoid has the following axioms
+/// a,b,c ∈ T op is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// ∃e ∈ T, ∀a ∈ T a op e = e op a = a
 /// \tparam T
 template <typename T>
 class Monoid: public SemiGroup<T> {
@@ -101,6 +109,9 @@ public:
 };
 
 /// CommutativeMonoid has the following axioms
+/// a,b,c ∈ T op is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// a,b ∈ T op is Commutative => op(a, b) = op(b, a)
+/// ∃e ∈ T, ∀a ∈ T a op e = e op a = a
 /// \tparam T
 template <typename T>
 class CommutativeMonoid: public Monoid<T>, public ICommutative<T> {
@@ -111,6 +122,9 @@ public:
 };
 
 /// Group has the following axioms
+/// a,b,c ∈ T op is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// ∃e ∈ T, ∀a ∈ T: a op e = e op a = a
+/// ∀a ∈ T, ∃a' ∈ T: a op a' = e = a' op a. Where e is the identity element
 /// \tparam T
 template <typename T>
 class Group: public Monoid<T> {
@@ -122,6 +136,10 @@ public:
 
 /// Also known as AbelianGroup
 /// CommutativeGroup has the following axioms
+/// a,b,c ∈ T op is Associative => op(op(a, b), c) = op(a, op(b, c))
+/// a,b ∈ T op is Commutative => op(a, b) = op(b, a)
+/// ∃e ∈ T, ∀a ∈ T: a op e = e op a = a
+/// ∀a ∈ T, ∃a' ∈ T: a op a' = e = a' op a. Where e is the identity element
 template <typename T>
 class CommutativeGroup: public Group<T>, public ICommutative<T>{};
 
