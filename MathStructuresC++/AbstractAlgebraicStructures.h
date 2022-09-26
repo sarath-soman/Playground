@@ -244,7 +244,7 @@ public:
     }), commutativeMonoid(group), monoid(monoid) {}
 
     bool doesZeroAnnihilates(T a) const {
-        return monoid.op(a, commutativeMonoid.identity()) == 0 &&
+        return monoid.op(a, commutativeMonoid.identity()) == commutativeMonoid.identity() &&
             monoid.op(commutativeMonoid.identity(), a) == commutativeMonoid.identity();
     }
 
