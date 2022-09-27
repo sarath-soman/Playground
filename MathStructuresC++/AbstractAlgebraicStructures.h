@@ -250,4 +250,27 @@ public:
 
 };
 
+/// Field is a triple (T, +, *) with the following axioms
+/// (T, +) is a CommutativeGroup, with identity element 0
+/// (T*, *) is a CommutativeGroup, where T* = {a ∈ T | a ≠ 0 }, with identity element 1
+/// 0 ≠ 1
+/// \tparam T
+template <typename T>
+class Field: public IDistributive<T> {
+    const CommutativeGroup<T>& additiveCommutativeGroup;
+    const CommutativeGroup<T>& multiplicativeCommutativeGroup;
+
+public:
+    Field(const CommutativeGroup<T>& additiveCommutativeGroup, const CommutativeGroup<T>& multiplicativeCommutativeGroup): IDistributive<T>(
+            [&additiveCommutativeGroup](T x, T y) ->T {
+                return additiveCommutativeGroup.op(x, y);
+            }, [&multiplicativeCommutativeGroup](T x, T y) ->T {
+                return multiplicativeCommutativeGroup.op(x, y);
+            }), additiveCommutativeGroup(additiveCommutativeGroup), multiplicativeCommutativeGroup(multiplicativeCommutativeGroup) {
+        if (additiveCommutativeGroup.identity() == multiplicativeCommutativeGroup.identity()) {
+            throw std::runtime_error("0 = 1. Additive identity cannot be equal to Multiplicative identity.");
+        }
+    }
+};
+
 #endif //MATHSTRUCTURESC___ABSTRACTALGEBRAICSTRUCTURES_H
