@@ -1,0 +1,9 @@
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+route('{%- token %}') {
+  uri '/{%- attributes.uri %}'
+  namespace uploadAttachment
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+identitymindAttachments << (identitymindAttachments as List) + (uploadAttachment.document as List)
+{%- outputPath() %}

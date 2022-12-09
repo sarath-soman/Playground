@@ -1,0 +1,31 @@
+redirectUrl << ""
+try {
+  if (webhookRequestResponse && webhookRequestResponse.redirect) {
+    def urlString = webhookRequestResponse.redirect.toString()
+    if (urlString.startsWith("http://") || urlString.startsWith("https://")) {
+      redirectUrl << urlString
+    }
+  }
+} catch(Exception e) {
+}
+
+identityMindFinalState << ""
+if (identityMindResult) {
+  if (identityMindResult.state) {
+      identityMindFinalState << identityMindResult.state.toString()
+  }
+}
+// override state from identityMindStateResult if exists 
+if (identityMindStateResult) {
+  if (identityMindStateResult.state) {
+    identityMindFinalState << identityMindStateResult.state.toString()
+  }
+}
+
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+route('{%- token %}') {
+  uri '/{%- attributes.uri %}'
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens, identityMindResult: identityMindResult, identityMindStateResult: identityMindStateResult, identityMindFinalState: identityMindFinalState, redirectUrl: redirectUrl
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+{%- outputPath() %}

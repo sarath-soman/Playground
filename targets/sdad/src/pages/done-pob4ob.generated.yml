@@ -1,0 +1,71 @@
+uri: done
+token: pob4ob
+components:
+  layout: !include ../layouts/base.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+items:
+  - !component as: Trigger
+    value: !expression "flow.export.identityMindFinalState"
+    change: !function "analytics.event('Submitted', { field: 'Form',
+      result_application: flow.export.identityMindFinalState })"
+  - !component as: Trigger
+    value: !expression "flow.export.identityMindFinalState || flow.export.redirectUrl"
+    change: !function |
+      if (device.isMobile && flow.export.startedOnDesktop) {
+        return;
+      }
+      const errorCode = flow.export && flow.export.identityMindFinalState || 'R';
+      let url = {
+        R: '',
+        D: '',
+        A: ''
+      }[errorCode];
+      if (flow.export && flow.export.redirectUrl) {
+        url = flow.export.redirectUrl
+      }
+      if (url) {
+        window.location.href = url;
+      }
+  - !ref components: layout
+    items:
+      - !component as: div
+        className: !expression |
+          (() => {
+            const ICONS_MAP = {
+              R: 'sandclock',
+              D: 'cross',
+              A: 'checkmark'
+            };
+
+            const errorCode = flow.export && flow.export.identityMindFinalState || 'R';
+
+            return 'CM-' + (ICONS_MAP[errorCode] || 'checkmark')
+          })()
+      - !component as: Heading
+        centered: true
+        items: !expression |
+          (() => {
+            const RESULTS_MAP = {
+              R: 'manualReviewMessage',
+              D: 'denyMessage',
+              A: 'acceptedMessage'
+            };
+
+            const errorCode = flow.export && flow.export.identityMindFinalState || 'R';
+
+            return te('redirections.' + (RESULTS_MAP[errorCode] || 'manualReviewMessage'));
+          })()

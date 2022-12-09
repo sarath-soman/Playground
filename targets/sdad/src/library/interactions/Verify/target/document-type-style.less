@@ -1,0 +1,39 @@
+.page-document-type-{%- attributes.uri %} {
+  .UI-IdTypeSelect {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 46px;
+
+    &-box {
+      font-size: 17px;
+      min-width: 136px;
+      height: 161px;
+      border-radius: 10px;
+      text-align: center;
+      padding: 32px 15px 0;
+      margin-right: 16px;
+      border: 2px solid var(--base-border-color);
+      background-color: var(--base-form-background);
+      cursor: pointer;
+
+      &--selected {
+        border-color: var(--base-brand-color);
+        color: var(--base-brand-color);
+      }
+
+      svg {
+        height: 50px;
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  @media (max-width: 1110px) and (min-width: 900px) {
+    .UI-IdTypeSelect-box {
+      min-width: 100px;
+      height: 148px;
+      padding: 20px 10px 0;
+      font-size: 16px;
+    }
+  }
+}

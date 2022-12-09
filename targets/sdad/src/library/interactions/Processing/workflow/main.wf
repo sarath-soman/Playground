@@ -1,0 +1,118 @@
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+route('{%- token %}') {
+  uri '/{%- attributes.uri %}'
+  namespace application
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+
+requestFields << [:]
+requestFiles << [:]
+
+identitymindMapping['profile'] << [
+    'static': '{%- attributes?.ednaProfile || "DEFAULT" %}',
+]
+identitymindMapping['stage'] << [
+    'static': {%- attributes?.ednaStage || 3 %},
+]
+if (application?.tacAgreement) {
+  identitymindMapping['memo0'] << [
+    'static': 'accepted terms and conditions',
+  ]
+}
+(identitymindMapping as Map).each{ key, val ->
+    if (val.static) {
+        requestFields[key] << val.static
+    } else if (val.application) {
+        def appKey = val.application.toString()
+        if (application[appKey]) {
+            requestFields[key] << application[appKey]
+        } else if (val.default) {
+            requestFields[key] << val.default
+        }
+    } else if (val.uploads) {
+        def upKey = val.uploads.toString()
+        if (uploads[upKey]) {
+            requestFiles[key] << uploads[upKey]
+        }
+    }
+}
+
+(identitymindMemos as List).each{ val ->
+    def key = null
+    for(int i = 1; i < 99; i++) {
+        if (!requestFields['memo' + i.toString()]) {
+            key = 'memo' + i.toString()
+            break
+        }
+    }
+    if (key) {
+        if (val.static) {
+            requestFields[key] << val.static
+        } else if (val.application) {
+            def appKey = val.application.toString()
+            if (application[appKey]) {
+                requestFields[key] << application[appKey]
+            } else if (val.default) {
+                requestFields[key] << val.default
+            }
+        }
+    }
+}
+
+// fill up man
+if (!requestFields['man']) {
+    if (requestFields['tea']) {
+        requestFields['man'] << requestFields['tea']
+    } else if (requestFields['phn']) {
+        requestFields['man'] << requestFields['phn']
+    } else if (requestFields['bfn'] && requestFields['bln']) {
+        requestFields['man'] << requestFields['bfn'].toString() + ' ' + requestFields['bln'].toString()
+    } else {
+        requestFields['man'] << identitymindManRandom
+    }
+}
+
+// data mapping
+if (requestFields['assn']) {
+    requestFields['assn'] << application.country.toString() + ':' + requestFields['assn'].toString().replaceAll("[^\\d]", "")
+}
+if (requestFields['assn1']) {
+    requestFields['assn1'] << application.country.toString() + ':' + requestFields['assn1'].toString().replaceAll("[^\\d]", "")
+}
+if (requestFields['assn2']) {
+    requestFields['assn2'] << application.country.toString() + ':' + requestFields['assn2'].toString().replaceAll("[^\\d]", "")
+}
+if (requestFields['dob']) {
+    requestFields['dob'] << (new java.text.SimpleDateFormat('yyyy-MM-dd')).format((new java.text.SimpleDateFormat('{%- (formats?.date?.format || "YYYY-MM-DD").replace(/Y/g, "y").replace(/D/g, "d") %}')).parse(requestFields['dob'].toString()))
+}
+
+identityMindResult << exchange('AcuantGo - IdentityMind - Consumer') {
+    config organizationId: {%- globals.organizationId %}, environment: "{%- globals.ednaEnvironment || "STG" %}", requestFields: requestFields, requestFiles: requestFiles
+}
+
+if (identityMindResult) {
+    if (identityMindResult.tid) {
+        identitymindMapping['tid'] << [
+            'static': identityMindResult.tid.toString(),
+        ]
+
+        def filesToUpload = (identitymindAttachments as List)
+        for(file in filesToUpload){
+            exchange('AcuantGo - IdentityMind - Merchant Upload') {
+                config organizationId: {%- globals.organizationId %}, environment: "{%- globals.ednaEnvironment || "STG" %}", appId: identityMindResult.tid.toString(), document: file
+            }
+        }
+        identitymindAttachments << []
+    }
+}
+
+if (identityMindResult) {
+    if (identityMindResult.tid) {
+        identityMindStateResult << exchange('AcuantGo - IdentityMind - State') {
+            config organizationId: {%- globals.organizationId %}, environment: "{%- globals.ednaEnvironment || "STG" %}", retriesWhileDvFinish: true, tid: identityMindResult.tid.toString()
+        }
+    }
+}
+
+{%- outputPath() %}

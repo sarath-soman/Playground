@@ -1,0 +1,335 @@
+styles:
+  - !include ./acuant-upload.less
+components:
+  acuantUploadButton: !include ./acuant-upload-button
+!component as: Fragment
+items:
+  - !component as: Script
+    url: "https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.13/lottie.min.js"
+
+  # upload instruction animations
+  - !component as: Trigger
+    value: !expression "form.tag['<%- name %>Modal']"
+    change: !function "
+        if (!form.tag['<%- name %>Modal']) {
+          return;
+        }
+
+        const ANIMATIONS_MAP = {
+          'ID': 'id_initial',
+          'DL': 'id_initial',
+          'RP': 'id_initial',
+          'PP': 'pass_initial',
+          'selfie': 'selfie_final'
+        };
+
+        const documentName = '<%- name %>';
+        const documentType = flow.export.documentType;
+
+        const animationName = documentName === 'selfie' ? ANIMATIONS_MAP[documentName] : ANIMATIONS_MAP[documentType]
+
+        const animation = bodymovin.loadAnimation({
+          container: document.getElementById('lottie-instruction'),
+          path: 'assets/' + animationName + '.json',
+          renderer: 'svg',
+          loop: true,
+          autoplay: true
+        });
+      "
+
+  # upload error animations
+  - !component as: Trigger
+    value: !expression "page.storage.get('<%- name %>Error', null)"
+    change: !function "
+        if (!page.storage.get('<%- name %>Error', null)) {
+          return;
+        }
+
+        const ANIMATIONS_MAP = {
+          'ID': {
+            imageBlurry: 'id_blur',
+            imageHasGlare: 'id_glare'
+          },
+          'DL': {
+            imageBlurry: 'id_blur',
+            imageHasGlare: 'id_glare'
+          },
+          'RP': {
+            imageBlurry: 'id_blur',
+            imageHasGlare: 'id_glare'
+          },
+          'PP': {
+            imageBlurry: 'pass_initial',
+            imageHasGlare: 'pass_glare'
+          },
+        };
+
+        const documentType = flow.export.documentType;
+        const errorCode = page.storage.get('<%- name %>Error', null);
+
+        const animationName = ANIMATIONS_MAP[documentType][errorCode];
+
+        const animation = bodymovin.loadAnimation({
+          container: document.getElementById('lottie-error'),
+          path: 'assets/' + animationName + '.json',
+          renderer: 'svg',
+          loop: true,
+          autoplay: true
+        });
+      "
+
+  # acuant modal
+  - !component as: Modal
+    tag: <%- name %>Modal
+    className: "acuantUploadModal <%- name %>"
+    closeButton: !expression "!page.storage.get('<%- name %>', null)"
+    shouldCloseOnOverlayClick: !expression "!page.storage.get('<%- name %>', null)"
+    shouldCloseOnEscClick: !expression "!page.storage.get('<%- name %>', null)"
+    items:
+      - !component as: VisibilityWrapper
+        visible: !expression "!form.hasTags(['<%- name %>Uploading'])"
+        items:
+          # upload hint
+          - !component as: div
+            style:
+              display: !expression "!page.storage.get('<%- name %>', null) ? 'block' : 'none'"
+            items:
+              - !component as: Heading
+                items: !expression "t('pages.<%- uri %>.<%- name %>.modal.title', { label: form.data.idCardLabel, type: flow.export.documentType })"
+              - !component as: div
+                id: "lottie-instruction"
+              - !component as: Paragraph
+                items: !t "pages.<%- uri %>.<%- name %>.modal.text"
+              - !ref components: acuantUploadButton
+                disableImagePrevalidation: !property prevalidationDisabled
+                name: <%- name %>
+                type: <%- type %>
+                text: !t "pages.<%- uri %>.continue"
+                onImageCropped: !function "page.storage.set('<%- name %>', imageFile);"
+                onImageCropFailed: !function "page.storage.set('<%- name %>Error', error)"
+                onImageCaptured: !function "page.storage.set('<%- name %>', imageFile);"
+                textOptions:
+                  NONE: !t acuantsdk.texts.NONE
+                  SMALL_DOCUMENT: !t acuantsdk.texts.SMALL_DOCUMENT
+                  BIG_DOCUMENT: !t acuantsdk.texts.BIG_DOCUMENT
+                  GOOD_DOCUMENT: !t acuantsdk.texts.GOOD_DOCUMENT
+                  CAPTURING: !t acuantsdk.texts.CAPTURING
+                  TAP_TO_CAPTURE: !t acuantsdk.texts.TAP_TO_CAPTURE
+                faceTextOptions:
+                  FACE_NOT_FOUND: !t acuantsdk.texts.FACE_NOT_FOUND
+                  TOO_MANY_FACES: !t acuantsdk.texts.TOO_MANY_FACES
+                  FACE_ANGLE_TOO_LARGE: !t acuantsdk.texts.FACE_ANGLE_TOO_LARGE
+                  PROBABILITY_TOO_SMALL: !t acuantsdk.texts.PROBABILITY_TOO_SMALL
+                  FACE_TOO_SMALL: !t acuantsdk.texts.FACE_TOO_SMALL
+                  FACE_CLOSE_TO_BORDER: !t acuantsdk.texts.FACE_CLOSE_TO_BORDER
+                messages:
+                  blurry: !t acuantsdk.messages.blurry
+                  ensure: !t acuantsdk.messages.ensure
+                  hasGlare: !t acuantsdk.messages.hasGlare
+                  generalFail: !t acuantsdk.messages.generalFail
+                credentials:
+                  endpoint: "<%- BUILD_PARAMS?.assureId?.[assureIdRegion || 'EU']?.acasUrl %>"
+                  token: "<%- BUILD_PARAMS?.assureId?.[assureIdRegion || 'EU']?.acasToken %>"
+
+          # processing view
+          - !component as: VisibilityWrapper
+            visible: !expression "typeof page.storage.get('<%- name %>', null) === 'string'"
+            items:
+              # title
+              - !component as: Heading
+                items: !t "pages.<%- uri %>.analyzing"
+              <% if (typeof side !== 'undefined') { %>
+              - !component as: div
+                className: badge
+                items: !t <%- side %>
+              <% } %>
+
+              # uploaded image and analyzing icon
+              - !component as: VisibilityWrapper
+                visible: !expression "!page.storage.get('<%- name %>Error', null)"
+                items:
+                  - !component as: div
+                    className: !expression "'analyzingImageWrapper' + (!page.storage.get('<%- name %>Error', null) ? ' animation' : '')"
+                    items:
+                      - !component as: Image
+                        src: !expression "page.storage.get('<%- name %>', null)"
+                  - !component as: div
+                    className: analyzingIcon
+                    items:
+                      - !component as: SVGImage
+                        url: '/assets/icons/analyzing.svg'
+
+              # errors
+              - !component as: VisibilityWrapper
+                visible: !expression "page.storage.get('<%- name %>Error', null)"
+                items:
+                  # render errors
+                  - !component as: div
+                    id: "lottie-error"
+                  - !component as: div
+                    className: errorLabel
+                    items: !expression "t('errors.' + page.storage.get('<%- name %>Error', null))"
+                  - !component as: div
+                    className: centerButton
+                    items:
+                      - !component as: Button
+                        onClick: !function |
+                          page.storage.set('<%- name %>Error', null);
+                          page.storage.set('<%- name %>', null);
+                          form.changeValue('<%- name %>', null);
+                        text: !t "pages.<%- uri %>.<%- name %>.retake"
+                        kind: secondary
+
+          # final cropped preview
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              (function() {
+                const t = page.storage.get('<%- name %>', 0);
+                return typeof t === 'object' && t;}
+              )()
+            items:
+              # title
+              - !component as: Heading
+                items: !t "pages.<%- uri %>.<%- name %>.confirmTitle"
+
+              # image
+              - !component as: Image
+                file: !expression "page.storage.get('<%- name %>', null)"
+
+              # retake button
+              - !component as: div
+                className: centerButton
+                items:
+                  - !component as: Button
+                    onClick: !function |
+                      page.storage.set('<%- name %>Error', null);
+                      page.storage.set('<%- name %>', null);
+                      form.changeValue('<%- name %>', null);
+                      form.addTags(['<%- name %>Modal']);
+                    text: !t "pages.<%- uri %>.<%- name %>.retake"
+                    kind: secondary
+
+              # Finish / upload data
+              - !component as: Button
+                onClick:
+                  !function eval: |
+                    form.addTags(['<%- name %>Uploading']);
+                    flow.sendFile(page.storage.get('<%- name %>', null))
+                      .then((file) => {
+                        if (typeof onFinish === 'function') {
+                          onFinish({file});
+                        }
+                        return flow.function.setPreview({name: (typeof prefix === 'string' ? prefix : '') + '<%- name %>', file})
+                      })
+                      .then(() => form.removeTags(['<%- name %>Modal', '<%- name %>Uploading']));
+                  onFinish: !property onFinish
+                  prefix: !property prefix
+                text: !t "pages.<%- uri %>.done"
+      - !component as: VisibilityWrapper
+        visible: !expression "form.hasTags(['<%- name %>Uploading'])"
+        items:
+          - !component as: Heading
+            items: !t "pages.<%- uri %>.uploading"
+          - !component as: div
+            className: loaderWrapper
+            items:
+              - !component as: Loader
+
+  - !component as: div
+    className:
+      !cx args:
+        - "acuantUploadButton"
+        - disabled: !property "disabled"
+    onClick: !function "if (!page.storage.get('<%- name %>', null)) {form.addTags(['<%- name %>Modal'])}"
+    items:
+
+      # empty
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          !(function() {
+            const t = page.storage.get('<%- name %>', 0);
+            return typeof t === 'object' && t;}
+          )()
+        items:
+          # badge
+          - !component as: div
+            className: badge
+            <% if (typeof side !== 'undefined') { %>
+            items: !t <%- side %>
+            <% } else { %>
+            items: !t <%- name %>
+            <% } %>
+          - !component as: label
+            items: !expression "t('pages.<%- uri %>.<%- name %>.takeImage', { device: form.hasTags(['handoffBypass']) ? 'desktop' : 'mobile' })"
+          - !component as: div
+            className: photoIcon
+            items:
+              - !component as: SVGImage
+                url: '/assets/icons/photo.svg'
+
+      # image preview
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          (function() {
+            const t = page.storage.get('<%- name %>', 0);
+            return typeof t === 'object' && t;}
+          )()
+        items:
+          - !component as: div
+            className: leftPanel
+            items:
+              # badge
+              - !component as: div
+                className: badge
+                <% if (typeof side !== 'undefined') { %>
+                items: !t <%- side %>
+                <% } else { %>
+                items: !t <%- name %>
+                <% } %>
+
+              # check
+              - !component as: div
+                className:
+                  !expression eval: "'check ' + status"
+                  status: !property status
+                items:
+                  - !component as: div
+                    className: icon okIcon
+                    items:
+                      - !component as: SVGImage
+                        url: '/assets/icons/ok.svg'
+                  - !component as: div
+                    className: icon failIcon
+                    items:
+                      - !component as: SVGImage
+                        url: '/assets/icons/fail.svg'
+                  - !component as: div
+                    className: icon analyzingIcon
+                    items:
+                      - !component as: SVGImage
+                        url: '/assets/icons/analyzing.svg'
+                  - !expression eval: "status === 'ok' ? 'Ok' : (status === 'pending' ? 'Pending' : (status === 'fail' ? 'Failed' : ''))"
+                    status: !property status
+
+              # retake
+              - !component as: Button
+                className: retakeButton
+                onClick:
+                  !function eval: |
+                    page.storage.set('<%- name %>Error', null);
+                    page.storage.set('<%- name %>', null);
+                    form.changeValue('<%- name %>', null);
+                    form.addTags(['<%- name %>Modal']);
+                    flow.function.setPreview({name: (typeof prefix === 'string' ? prefix : '') + '<%- name %>', file: null});
+                  prefix: !property prefix
+                text:
+                  - !component as: div
+                    className: photoIcon
+                    items:
+                      - !component as: SVGImage
+                        url: '/assets/icons/photo.svg'
+                  - !component as: span
+                    items: !t "pages.<%- uri %>.retake"
+          - !component as: Image
+            file: !expression "page.storage.get('<%- name %>', null)"
+

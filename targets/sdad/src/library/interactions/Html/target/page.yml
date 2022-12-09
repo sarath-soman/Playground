@@ -1,0 +1,25 @@
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data: { field: "Form" }
+  page:
+    enter:
+      eventName: "Viewed"
+      data: { field: "Page" }
+    leave:
+      eventName: "Completed"
+      data: { field: "Page" }
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      - !component as: Heading
+        items: "{%- attributes.title %}"
+      - !html "{%- attributes.html.replace(/\n/gm, "\\n").replace(/\"/gm, "\\\"") %}"
+{% if(attributes && attributes.showContinue) { %}
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"
+{% } %}

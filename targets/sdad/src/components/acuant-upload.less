@@ -1,0 +1,259 @@
+@keyframes scanning {
+  100% {
+    top: calc(100% + 50px);
+  }
+}
+
+.acuantUploadButton {
+  background: #ffffff;
+  border: 1px solid rgba(46, 49, 63, 0.124353);
+  box-shadow: 0 7px 14px rgba(46, 49, 63, 0.143514);
+  border-radius: 6px;
+  min-height: 53px;
+  display: flex;
+  margin-bottom: 30px;
+  padding: 15px 13px;
+  position: relative;
+  align-items: center;
+
+  &.disabled {
+    pointer-events: none;
+
+    .badge {
+      background-color: var(--base-disabled-color);
+      color: #979797;
+    }
+
+    label {
+      color: var(--base-label-color);
+    }
+  }
+
+  .badge {
+    background: var(--base-brand-color);
+    line-height: 25px;
+    font-size: 13px;
+    color: var(--base-brand-color-contrast);
+    text-transform: uppercase;
+    padding: 0 10px;
+    border-radius: 13px;
+    display: inline-block;
+    margin-right: 17px;
+    text-align: center;
+  }
+
+  .check {
+    text-align: center;
+    font-size: 15px;
+    line-height: 25px;
+    background-repeat: no-repeat;
+    background-position: 50% 0;
+    background-size: 20px;
+    position: relative;
+
+    .icon {
+      display: none
+    }
+
+    svg {
+      height: 20px;
+      width: 20px;
+      margin: 0 auto;
+    }
+
+    &.ok .okIcon {
+      display: block;
+    }
+
+    &.fail .failIcon {
+        display: block
+    }
+
+    &.pending .analyzingIcon {
+      display: block
+    }
+  }
+
+  .retakeButton {
+    margin-top: 0;
+
+    & span {
+      color: var(--base-brand-color);
+    }
+  }
+
+  label {
+    font-weight: bold;
+    font-size: 16px;
+    color: var(--base-brand-color);
+  }
+
+  .photoIcon {
+    width: 23px;
+    height: 18px;
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    margin-top: -9px;
+
+    svg {
+      width: 23px;
+      height: 18px;
+    }
+  }
+
+  .leftPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: stretch;
+    margin-right: 24px;
+    align-items: stretch;
+
+    .badge {
+      margin: 0;
+    }
+
+    .retakeButton {
+      padding: 0;
+      background: transparent;
+      color: var(--base-brand-color);
+      border: 1px solid var(--base-brand-color);
+      height: auto;
+      box-shadow: none;
+
+      .CM-button__text {
+        display: flex;
+        align-items: center;
+        padding: 0 5px;
+
+        .photoIcon {
+          display: block;
+          height: 18px;
+          margin: 0 5px 0 0;
+          position: static;
+        }
+      }
+    }
+  }
+}
+
+.acuantUploadModal {
+  #lottie-instruction,
+  #lottie-error {
+    margin: 40px -40px 10px;
+  }
+
+  .CM-modal__wrapper {
+    max-width: 450px;
+    @media (max-width: 900px) {
+      top: 40px;
+      bottom: auto;
+      left: 20px;
+      right: 20px;
+      width: auto;
+    }
+
+
+    @media (max-width: 390px) {
+      top: 5px;
+
+      .CM-modal__wrapper {
+        top: 20px;
+      }
+
+      .CM-heading {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .CM-modal__content {
+        padding-top: 25px;
+      }
+
+      #lottie-instruction {
+        margin-top: 15px;
+      }
+    }
+
+    @media (max-width: 375px) {
+      .CM-button {
+        max-height:40px;
+      }
+    }
+  }
+
+  .CM-modal__content {
+    position: relative;
+  }
+
+  .badge {
+    background: var(--base-brand-color);
+    line-height: 25px;
+    font-size: 13px;
+    color: var(--base-brand-color-contrast);
+    text-transform: uppercase;
+    padding: 0 10px;
+    border-radius: 13px;
+    display: inline-block;
+  }
+
+  .analyzingIcon {
+    width: 51px;
+    height: 51px;
+    margin: 32px auto 15px auto;
+  }
+
+  .analyzingImageWrapper {
+    margin-top: 49px;
+    position: relative;
+    overflow: hidden;
+
+    &.animation::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 50px;
+      top: -50px;
+      background-image: linear-gradient(to bottom, rgba(170, 184, 190, 0), rgba(170, 184, 190, 0.8));
+      animation: scanning 1s linear infinite;
+    }
+  }
+
+  .errorLabel {
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  .centerButton {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+  }
+
+  .CM-button.CM-button--kind--secondary {
+    background: transparent;
+    color: var(--base-brand-color);
+    border: 1px solid var(--base-brand-color);
+    white-space: nowrap;
+    font-weight: 500;
+    font-size: 16px;
+    padding: 0 20px;
+    height: 47px;
+    width: auto;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+
+  .loaderWrapper {
+    padding: 40px 0;
+    position: relative;
+  }
+
+  .CM-button--kind--secondary {
+    .CM-button__text {
+      color: var(--base-brand-color) !important;
+    }
+  }
+}

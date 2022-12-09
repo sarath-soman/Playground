@@ -1,0 +1,131 @@
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+  GenericField: !include ../components/generic-field.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+  fields:
+    location:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: "Address"
+      blur:
+        eventName: "Input"
+        data:
+          field: "Address"
+schema: !expression |
+  utils.generateSchema({
+    fields: [
+      {name: 'location', required: true},
+      {name: 'address', type: 'text', required: true, minLength: 1},
+      {name: 'state', type: 'text', required: true, minLength: 1},
+      {name: 'city', type: 'text', required: true, minLength: 1},
+      {name: 'postalCode', type: 'text', required: true, minLength: 1},
+    ],
+  });
+styles:
+  - !include ../styles/{%- attributes.uri %}-{%- token %}.less
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      # title and heading
+      {% if(attributes?.name) { %}
+      - !component as: Heading
+        items: !t pages.{%- attributes.uri %}.title
+      {% } %}
+      {% if(attributes?.description) { %}
+      - !component as: Paragraph
+        items: !t pages.{%- attributes.uri %}.description
+      {% } %}
+
+      - !component as: div
+        className: address-group
+        items:
+          # search for address
+          - !ref components: GenericField
+            field:
+              type: 'address'
+              name: location
+              returnType: 'location'
+              showMap: {%- attributes.showMapOnSearch %}
+            notFoundRow:
+              - !component as: a
+                className: link-button
+                onMouseDown: !function "form.addTags(['manualAddress'])"
+                items: !t "pages.{%- attributes.uri %}.notFoundAddress"
+            extraRow:
+              - !component as: a
+                className: link-button
+                onMouseDown: !function "form.addTags(['manualAddress'])"
+                items: !t "pages.{%- attributes.uri %}.enterAddressManually"
+            uri: {%- attributes.uri %}
+
+          - !component as: Trigger
+            value: !expression "form.data.location.formattedAddress"
+            change: !function |
+              const data = form?.data?.location;
+              if (data) {
+                form.changeValue('address', (/^([\d]*)\s/.test(data.formattedAddress) ? [data.streetNumber, data.street] : [data.street, data.streetNumber]).filter(Boolean).join(' '));
+                form.changeValue('postalCode', data.postalCode);
+                form.changeValue('city', data.locality ? data.locality : (data.postalTown ? data.postalTown : (data.area2 ? data.area2 : data.area1)));
+                form.changeValue('state', data.area1);
+                form.changeValue('addressCountry', data.countryCode);
+                analytics.event('Found', { field: 'Address' });
+              }
+
+          #manual address
+          - !ref components: GenericField
+            field:
+              type: text
+              name: address
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+            uri: {%- attributes.uri %}
+          - !ref components: GenericField
+            field:
+              type: text
+              name: address2
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+            uri: {%- attributes.uri %}
+          - !ref components: GenericField
+            field:
+              type: text
+              name: postalCode
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+            uri: {%- attributes.uri %}
+          - !ref components: GenericField
+            field:
+              type: text
+              name: city
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+            uri: {%- attributes.uri %}
+          - !ref components: GenericField
+            field:
+              type: text
+              name: state
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+            uri: {%- attributes.uri %}
+          - !ref components: GenericField
+            field:
+              type: select
+              name: addressCountry
+              visibleExpression: "form.hasTags(['manualAddress']) || !!form.data.location"
+              searchable: true
+              options: {%- JSON.stringify( Object.keys(constants.COUNTRIES).filter((countryCode) => ((attributes.whitelistCountries?.length) ? (attributes.whitelistCountries?.indexOf(countryCode) > -1) : true) && ((attributes.blacklistCountries?.length) ? (attributes.blacklistCountries?.indexOf(countryCode) === -1) : true)).reduce((obj, countryCode) => ({ ...obj, [countryCode]: constants.COUNTRIES[countryCode] }), {}) ) %}
+            uri: {%- attributes.uri %}
+
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"

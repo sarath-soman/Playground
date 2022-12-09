@@ -1,0 +1,110 @@
+uri: contact-details
+token: -bfwyrg
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+  GenericField: !include ../components/generic-field.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+
+  fields:
+
+    contactDetailsEmail1:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('contactDetailsEmail1')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('contactDetailsEmail1')"
+
+    contactDetailsMobile2:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('contactDetailsMobile2')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('contactDetailsMobile2')"
+
+schema: !expression |
+  utils.generateSchema({
+    fields: [{"type":"text","name":"contactDetailsEmail1","label":"Email","minLength":2,"required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"tea","validation":{"template":"email","pattern":"^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"}},{"type":"phone","name":"contactDetailsMobile2","label":"Mobile","required":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"phn"}],
+    tacAgreement:  false,
+    gdprAgreement: false
+  });
+defaults:
+
+  contactDetailsEmail1: !expression |
+    utils.getFieldUrlData( {field: {"type":"text","name":"contactDetailsEmail1","label":"Email","minLength":2,"required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"tea","validation":{"template":"email","pattern":"^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"}} })
+
+  contactDetailsMobile2: !expression |
+    utils.getFieldUrlData( {field: {"type":"phone","name":"contactDetailsMobile2","label":"Mobile","required":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"phn"} })
+
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      # title and heading
+      - !component as: Heading
+        items: !t pages.contact-details.title
+
+      - !component as: Paragraph
+        items: !t pages.contact-details.description
+
+      # all inputs render
+      - !ref components: GenericField
+        field:
+          {
+            "type": "text",
+            "name": "contactDetailsEmail1",
+            "label": "Email",
+            "minLength": 2,
+            "required": true,
+            "blockWhenPrefilled": true,
+            "ednaField": true,
+            "ednaType": "basic",
+            "ednaBasicName": "tea",
+            "validation":
+              {
+                "template": "email",
+                "pattern": "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\
+                  \".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,\
+                  3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+              }
+          }
+        uri: contact-details
+        minAge: null
+
+      - !ref components: GenericField
+        field:
+          {
+            "type": "phone",
+            "name": "contactDetailsMobile2",
+            "label": "Mobile",
+            "required": true,
+            "ednaField": true,
+            "ednaType": "basic",
+            "ednaBasicName": "phn"
+          }
+        uri: contact-details
+        minAge: null
+
+      # agree with tac
+      #gdpr agreement
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"

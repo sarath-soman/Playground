@@ -1,0 +1,130 @@
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+  GenericField: !include ../components/generic-field.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+{% if (outputs.length) { %}
+  fields:
+    {% for (const field of outputs) { %}
+    {%- `${field.name}:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('${field.name}')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('${field.name}')"
+    `%}
+    {% } %}
+{% } %}
+schema: !expression |
+  utils.generateSchema({
+    fields: {%- JSON.stringify(outputs || [])%},
+    tacAgreement:  {%- attributes.showTacAgreement ? `Boolean(globals?.legal?.tacAgreementEnabled)` : `false` %},
+    gdprAgreement: {%- attributes.showGdprAgreement ? `utils.getGdprAgreementVisibility()` : `false` %}
+  });
+defaults:
+  {% for(const field of outputs) { %}
+  {%-`${field.name}: !expression |
+    utils.getFieldUrlData( {field: ${JSON.stringify(field)} })
+  `%}
+  {% } %}
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      # title and heading
+      {% if(attributes && attributes.name) { %}
+      - !component as: Heading
+        items: !t pages.{%- attributes.uri %}.title
+      {% } %}
+      {% if(attributes && attributes.description) { %}
+      - !component as: Paragraph
+        items: !t pages.{%- attributes.uri %}.description
+      {% } %}
+
+      # all inputs render
+      {% for(const field of outputs) {  %}
+      - !ref components: GenericField
+        field: {%- JSON.stringify(field) %}
+        uri: {%- attributes.uri %}
+        minAge: {%- attributes.minAge %}
+      {% } %}
+
+      # agree with tac
+      {% if(attributes && attributes.showTacAgreement) { %}
+      - !component as: VisibilityWrapper
+        visible: !expression "globals?.legal?.tacAgreementEnabled"
+        items:
+          - !component as: Checkbox
+            name: tacAgreement
+            onChange: !expression |
+              (value) => {
+                form.changeValue('tacAgreement', value);
+                if (value) {
+                  analytics.event('Accepted', { field: 'Agreements' });
+                }
+              }
+            label:
+              - !component as: i
+                items: !t "tacAgreement.label"
+              - " "
+              - !component as: VisibilityWrapper
+                visible: !expression "globals?.legal?.tacAgreementType === 'local'"
+                items:
+                  - !component as: TagButton
+                    tag: tacAgreementModal
+                    text: !t "tacAgreement.button"
+                    onClick: !function "analytics.event('Clicked', { field: 'Agreements' });"
+              - !component as: VisibilityWrapper
+                visible: !expression "globals?.legal?.tacAgreementType === 'external'"
+                items:
+                  - !component as: a
+                    href: !expression "globals?.legal?.tacAgreementUrl"
+                    target: "_blank"
+                    items: !t "tacAgreement.button"
+                    onClick: !function "analytics.event('Clicked', { field: 'Agreements' });"
+      {% } %}
+
+      #gdpr agreement
+      {% if(attributes && attributes.showGdprAgreement) { %}
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          utils.getGdprAgreementVisibility()
+        items:
+          - !component as: Checkbox
+            name: gdprAgreement
+            onChange: !expression |
+              (value) => {
+                form.changeValue('gdprAgreement', value);
+                if (value) {
+                  analytics.event('Accepted', { field: 'GDPR' });
+                }
+              }
+            label:
+              - !component as: i
+                items: !t "gdprAgreement.label"
+              - " "
+              - !component as: TagButton
+                tag: gdprAgreementModal
+                text: !t "gdprAgreement.button"
+                onClick: !function "analytics.event('Clicked', { field: 'GDPR' });"
+      {% } %}
+
+
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"

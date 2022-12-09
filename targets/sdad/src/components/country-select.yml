@@ -1,0 +1,69 @@
+styles:
+  - !include ./country-select.less
+!component as: Fragment
+items:
+  # modal with country selection
+  # open modal
+  - !component as: Trigger
+    load: !function |
+      try {
+        if (flow.export.country) {
+          return
+        }
+
+        if (url.query.country) {
+          window.COUNTRY = url.query.country;
+          form.changeValue('country', window.COUNTRY);
+        } else if (globals?.geolocationDisable) {
+          form.addTags(['selectCountryModal']);
+        } else if (!window.COUNTRY) {
+          form.addTags(['selectCountryModal']);
+        } else {
+          form.changeValue('country', window.COUNTRY);
+        }
+      } catch(e) {}
+  - !component as: Trigger
+    value: !expression "form.field.country.isFilled"
+    change: !function "form.field.country.isFilled && form.removeTags(['selectCountryError']);"
+  - !component as: Trigger
+    value: !expression "form.data.country"
+    change: !function "form.recompileSchema();"
+  - !component as: Modal
+    tag: selectCountryModal
+    closeButton: false
+    className: selectCountryModal
+    items:
+      - !component as: Heading
+        items: !t "countrySelect.title"
+      - !component as: Select
+        name: country
+        label: !t "countrySelect.country"
+        options: !expression |
+          Object.keys(constants.COUNTRIES)
+            .filter((countryCode) =>
+              ((globals?.regionalSettings?.whitelistCountries?.length) ? (globals?.regionalSettings?.whitelistCountries?.indexOf(countryCode) > -1) : true) &&
+              ((globals?.regionalSettings?.blacklistCountries?.length) ? (globals?.regionalSettings?.blacklistCountries?.indexOf(countryCode) === -1) : true)
+            )
+            .reduce((obj, countryCode) => ({
+              ...obj,
+              [countryCode]: constants.COUNTRIES[countryCode]
+            }), {});
+        searchable: true
+        onChange: !expression "(value) => analytics.event('Input', { field: 'Country', country_selected: value, country_matches_ip: value === window.COUNTRY })"
+        onFocus: !function "analytics.event('Clicked', { field: 'Country' })"
+      - !component as: VisibilityWrapper
+        visible: !expression "form.hasTags['selectCountryError']"
+        items:
+          - !component as: div
+            className: "CM-error"
+            items: !t "errors.countryRequired"
+      - !component as: Button
+        onClick: !function |
+          if (form.field.country.isFilled) {
+            form.removeTags(['selectCountryModal']);
+            utils.switchLanguage(form.data.country);
+          } else {
+            form.addTags(['selectCountryError']);
+          }
+        text: !t "common.continue"
+        disabled: !expression "form.hasTags['selectCountryError']"

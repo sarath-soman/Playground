@@ -1,0 +1,47 @@
+components:
+  backLink: !include ../components/back-link.yml
+  footer: !include ../components/footer.yml
+  handoff: !include ../components/handoff.yml
+  countrySelect: !include ../components/country-select.yml
+  fingerprint: !include ../components/fingerprint.yml
+  languageSwitcher: !include ../components/language-switcher.yml
+  embed: !include ../components/embed.yml
+!component as: LayoutWithSidebar
+isLayout: true # Required for DS to understand how to change properties in nested layout items
+className: !expression "cx({'sidebar-hidden': (helper.isInIframe && !JSON.parse(url.query.showSidebar)) || globals.general.hideSidebar}, {'header-hidden': helper.isInIframe && !JSON.parse(url.query.showHeader)})"
+progress:
+  !expression "(flow.steps.length ? ((flow.steps.findIndex((rs) => rs.type === 'step' && rs.active) + 1) / (flow.steps.length + 1)) : 0) * 100"
+sidebar:
+  - !component as: SidebarProgress
+    flowRenderSteps: !expression |
+      flow?.steps?.map(i => {
+        if (i.stepName) {
+          return {...i, stepName: t(`steps.${i.stepName}`) };
+        }
+        return i;
+      });
+sidebarHeader:
+  - !component as: div
+    className: "CM-logo"
+headerLeft:
+  - !ref components: backLink
+    !condition omit: typeof omitBackButton === 'boolean' && omitBackButton
+headerMiddle:
+  - !component as: div
+    className: "CM-headerLogo"
+headerRight:
+  - !ref components: languageSwitcher
+mainContentHeaderLeft:
+  - !ref components: backLink
+    !condition omit: typeof omitBackButton === 'boolean' && omitBackButton
+    withText: true
+mainContentHeaderRight:
+  - !ref components: languageSwitcher
+items:
+  !property name: items
+footer:
+  - !ref components: handoff
+  - !ref components: countrySelect
+  - !ref components: fingerprint
+  - !ref components: footer
+  - !ref components: embed

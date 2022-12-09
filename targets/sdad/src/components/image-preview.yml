@@ -1,0 +1,67 @@
+styles:
+  - !include ./image-preview.less
+!component as: div
+className: imagePreviewWrapper
+items:
+  - !component as: div
+    className: leftPanel
+    items:
+      # badge
+      - !component as: div
+        className: badge
+        <% if (typeof side !== 'undefined') { %>
+        items: !t <%- side %>
+        <% } else { %>
+        items: !t <%- name %>
+        <% } %>
+      # check
+      - !component as: VisibilityWrapper
+        visible:
+          !expression eval: "!!uuid"
+          uuid: !property uuid
+        items:
+          - !component as: div
+            className:
+              !expression eval: "'check ' + status"
+              status: !property status
+            items:
+              - !component as: div
+                className: icon okIcon
+                items:
+                  - !component as: SVGImage
+                    url: '/assets/icons/ok.svg'
+              - !component as: div
+                className: icon failIcon
+                items:
+                  - !component as: SVGImage
+                    url: '/assets/icons/fail.svg'
+              - !component as: div
+                className: icon analyzingIcon
+                items:
+                  - !component as: SVGImage
+                    url: '/assets/icons/analyzing.svg'
+              - !expression eval: "status === 'ok' ? 'Ok' : (status === 'pending' ? 'Pending' : (status === 'fail' ? 'Failed' : ''))"
+                status: !property status
+      - !component as: div
+  # image
+  - !component as: div
+    className: imageWrapper
+    items:
+      # placeholder
+      - !component as: VisibilityWrapper
+        visible:
+          !expression eval: "!uuid"
+          uuid: !property uuid
+        items: !t "handoff.waitingText"
+      # if we have uuid
+      - !component as: VisibilityWrapper
+        visible:
+          !expression eval: "!!uuid"
+          uuid: !property uuid
+        items:
+          - !component as: div
+            className: "CM-fileUpload__image CM-image"
+            items:
+              - !component as: Image
+                uuid: !property uuid
+

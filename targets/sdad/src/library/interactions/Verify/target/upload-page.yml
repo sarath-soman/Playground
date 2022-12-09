@@ -1,0 +1,510 @@
+{%
+const documentTypes = attributes?.documentTypes?.length ? attributes?.documentTypes : ['PP', 'ID', 'DL', 'RP'];
+const documentCountries = Object.keys(constants.COUNTRIES).filter((countryCode) => ((attributes.whitelistCountries?.length) ? (attributes.whitelistCountries?.indexOf(countryCode) > -1) : true) && ((attributes.blacklistCountries?.length) ? (attributes.blacklistCountries?.indexOf(countryCode) === -1) : true));
+const showDocumentSwitch = documentTypes.length > 1 || documentCountries.length > 1;
+%}
+
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+  imagePreview: !include ../components/image-preview.yml
+  acuantUpload: !include ../components/acuant-upload.yml
+styles:
+  - !include ../styles/upload-{%- attributes.uri %}-{%- token %}.less
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data: { field: "Form" }
+  page:
+    enter:
+      eventName: "Viewed"
+      data: { field: "Page" }
+    leave:
+      eventName: "Completed"
+      data: { field: "Page" }
+  fields:
+    idCardFront:
+      click:
+        eventName: "Clicked"
+        data:
+          field: "Front ID"
+      change:
+        eventName: "Input"
+        data:
+          field: "Front ID"
+      accepted:
+        eventName: "Result"
+        data:
+          field: "Front ID"
+          result: "accepted"
+      rejected:
+        eventName: "Result"
+        data:
+          field: "Front ID"
+          result: "rejected"
+    idCardBack:
+      click:
+        eventName: "Clicked"
+        data:
+          field: "Back ID"
+      change:
+        eventName: "Input"
+        data:
+          field: "Back ID"
+      accepted:
+        eventName: "Result"
+        data:
+          field: "Back ID"
+          result: "accepted"
+      rejected:
+        eventName: "Result"
+        data:
+          field: "Back ID"
+          result: "rejected"
+{% if (attributes.selfieEnabled) { %}
+    selfie:
+      click:
+        eventName: "Clicked"
+        data:
+          field: "Selfie"
+      change:
+        eventName: "Input"
+        data:
+          field: "Selfie"
+      accepted:
+        eventName: "Result"
+        data:
+          field: "Selfie"
+          result: "accepted"
+      rejected:
+        eventName: "Result"
+        data:
+          field: "Selfie"
+          result: "rejected"
+{% } %}
+schema:
+  required:
+    - idCardFront
+{% if (attributes.selfieEnabled) { %}
+    - selfie
+{% } %}
+  properties:
+    idCardFront:
+      type: array
+      minItems: 1
+  errorMessage:
+    _: !expression |
+      (function() {
+        return t('errors.requiredField')
+      })()
+defaults:
+  idCardLabel: !expression |
+    {
+      ['PP']: t('pages.{%- attributes.uri %}.documentType.passport'),
+      ['ID']: t('pages.{%- attributes.uri %}.documentType.government-id'),
+      ['DL']: t('pages.{%- attributes.uri %}.documentType.drivers-license'),
+      ['RP']: t('pages.{%- attributes.uri %}.documentType.residence-permit')
+    }[flow.export.documentType]
+  handoffMobile: !expression "flow.export.mobile"
+locals:
+  handoffPage: true
+items:
+    # Change document type confirmation
+  - !component as: Modal
+    tag: changeDocumentTypeModal
+    className: switchDocumentConfirm
+    shouldCloseOnEscClick: true
+    shouldCloseOnOverlayClick: true
+    closeButton: true
+    items:
+      - !component as: Heading
+        items: !t 'pages.{%- attributes.uri %}.confirmChange.title'
+      - !component as: Paragraph
+        items: !t 'pages.{%- attributes.uri %}.confirmChange.text'
+      - !component as: Button
+        onClick: !function "form.removeTags(['changeDocumentTypeModal'])"
+        text: !t 'pages.{%- attributes.uri %}.confirmChange.reject'
+      - !component as: div
+        className: center
+        items:
+          - !component as: LinkButton
+            actionName: flowBack
+            notValidated: true
+            text: !t 'pages.{%- attributes.uri %}.confirmChange.continue'
+  # Layout
+  - !ref components: layoutWithSidebar
+    omitBackButton: true
+    items:
+      # upload
+      - !component as: VisibilityWrapper
+        visible: !expression "device.isMobile || form.hasTags(['handoffBypass'])"
+        items:
+          # document
+          - !component as: Heading
+            items: !expression "t('pages.{%- attributes.uri %}.documentTitle', { label: form.data.idCardLabel || 'Document' })"
+
+          # show only for handoff
+          - !component as: VisibilityWrapper
+            visible: !expression "(device.isMobile && !flow.export.isDesktop) || device.isDesktop"
+            items:
+              - !component as: div
+                className: "row"
+                items:
+                  - !component as: Icon
+                    kind: !expression |
+                      {
+                        ['PP']: 'doc-passport',
+                        ['ID']: 'doc-id',
+                        ['DL']: 'doc-license',
+                        ['RP']:  'doc-residence'
+                      }[flow?.export.documentType]
+                    size: 30
+                    className: documentIcon
+
+                  - !component as: div
+                    className: switchDocument
+                    items:
+                      - !component as: div
+                        className: switchDocument-name
+                        items:
+                          - !expression |
+                            {%- JSON.stringify(constants.COUNTRIES) %}[flow.export.documentCountry] || 'Country'
+                          - " / "
+                          - !expression |
+                            {
+                              ['PP']: t('pages.{%- attributes.uri %}.documentType.passport'),
+                              ['ID']: t('pages.{%- attributes.uri %}.documentType.government-id'),
+                              ['DL']: t('pages.{%- attributes.uri %}.documentType.drivers-license'),
+                              ['RP']: t('pages.{%- attributes.uri %}.documentType.residence-permit')
+                            }[flow.export.documentType] || 'Document'
+                      {% if (showDocumentSwitch) { %}
+                      - !component as: VisibilityWrapper
+                        visible: !expression "!flow?.export?.forcedDocumentType"
+                        items:
+                          - !component as: a
+                            className: CM-linkButton
+                            href: "#"
+                            onClick: !function "form.addTags(['changeDocumentTypeModal'])"
+                            items: !t 'pages.{%- attributes.uri %}.changeDocumentType'
+                      {% } %}
+
+          # front
+          - !ref components: acuantUpload
+            assureIdRegion: {% if(globals?.assureIdRegion) { %}"{%- globals?.assureIdRegion %}"{% } else { %}"EU"{% } %}
+            name: idCardFront
+            type: document
+            side: pages.{%- attributes.uri %}.idCardFront.badge
+            prevalidationDisabled: !expression "page.storage.get('precheckFailed') || {%- attributes?.imagePrevalidationDisabled %}"
+            status: !expression "page.storage.get('classificationStatus')"
+            onRejected: !function page.storage.set('precheckFailed', true);
+            prefix: {%- attributes.uri %}
+            onFinish: !function |
+              page.storage.set('precheckFailed', false);
+              if (page.storage.get('classificationWasUsed')) {
+                form.removeTags(['waiting_classification']);
+                page.storage.set('classificationStatus', 'ok');
+                flow.function.setClassification({status: 'ok'});
+                return;
+              }
+              page.storage.set('classificationWasUsed', true);
+
+              form.addTags(['waiting_classification']);
+              page.storage.set('classificationStatus', null);
+              let isWaiting = true;
+
+              function clearClassificationTimeout() {
+                const timeout = page.storage.get('classification_timeout');
+                if (timeout) {
+                  clearTimeout(timeout);
+                }
+              }
+
+              clearClassificationTimeout();
+              page.storage.set('classification_timeout', setTimeout(() => {
+                try {
+                  if (!isWaiting || !form.data.idCardFront) {
+                    return;
+                  }
+                  // was timeout
+                  isWaiting = false;
+                  form.removeTags(['waiting_classification']);
+                  page.storage.set('classificationStatus', 'ok');
+                  flow.function.setClassification({status: 'ok'});
+                } catch(e) {}
+              }, 20000));
+
+              page.storage.set('classificationStatus', 'pending');
+              flow.function.setClassification({status: 'pending'});
+              flow.function.classificateDocument({file, side: 'front'})
+                .then((result) => {
+                  if (!isWaiting || !form.data.idCardFront) {
+                    return;
+                  }
+                  isWaiting = false;
+                  form.removeTags(['waiting_classification']);
+                  clearClassificationTimeout();
+
+                  const classNamesTable = {
+                    'identification card': 'ID',
+                    'drivers license': 'DL',
+                    'passport': 'PP',
+                    'residence document': 'RP',
+                  };
+
+                  const isUto = result?.result?.ClassificationDetails?.Front?.CountryCode === 'UTO';
+                  console.log('Document classification | country:', result?.result?.ClassificationDetails?.Front?.CountryCode, 'className:', result?.result?.ClassificationDetails?.Front?.ClassName);
+
+                  const country = constants.COUNTRIES_FULL.find(i => i.alpha3Code === result?.result?.ClassificationDetails?.Front?.CountryCode);
+                  const className = result?.result?.ClassificationDetails?.Front?.ClassName;
+                  if ((isUto || country?.alpha2Code === flow?.export?.documentCountry) && className && classNamesTable[className.toLowerCase()] === flow?.export?.documentType) {
+                    // was success
+                    flow.function.setClassification({status: 'ok'});
+                    page.storage.set('classificationStatus', 'ok');
+                  } else {
+                    // error
+                    flow.function.setClassification({status: 'fail'});
+                    page.storage.set('classificationStatus', 'fail');
+                    page.storage.set('idCardFrontError', null);
+                    form.changeValue('idCardFront', null);
+                  }
+                }, () => {
+                  clearClassificationTimeout();
+                  flow.function.setClassification({status: 'fail'});
+                  page.storage.set('classificationStatus', 'fail');
+                  page.storage.set('idCardFrontError', null);
+                  form.changeValue('idCardFront', null);
+                  form.removeTags(['waiting_classification']);
+                });
+            uri: {%- attributes.uri %}
+
+          # back
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              (({%- JSON.stringify(attributes.idBackRequiredCountries) %} || []).includes(flow.export?.documentCountry) || {%- attributes.idBackRequiredAllCountries %}) && ['ID', 'DL'].includes(flow.export?.documentType)
+            items:
+              - !ref components: acuantUpload
+                assureIdRegion: {% if(globals?.assureIdRegion) { %}"{%- globals?.assureIdRegion %}"{% } else { %}"EU"{% } %}
+                name: idCardBack
+                type: document
+                side: back
+                status: ok
+                prefix: {%- attributes.uri %}
+                uri: {%- attributes.uri %}
+
+          # selfie
+          {% if (attributes.selfieEnabled) { %}
+          - !component as: hr
+
+          - !component as: Heading
+            items: !t "pages.{%- attributes.uri %}.selfieTitle"
+
+          - !ref components: acuantUpload
+            assureIdRegion: {% if(globals?.assureIdRegion) { %}"{%- globals?.assureIdRegion %}"{% } else { %}"EU"{% } %}
+            name: selfie
+            type: selfie
+            side: pages.{%- attributes.uri %}.selfie.badge
+            status: ok
+            disabled: !expression "!form.data.idCardFront || (!form.data.idCardBack && backRequired)"
+            prefix: {%- attributes.uri %}
+            uri: {%- attributes.uri %}
+          {% } %}
+
+          # submit
+          - !component as: SubmitButton
+            actionName: flowSubmit
+            disabled: !expression |
+              (function() {
+                const backRequired = (({%- JSON.stringify(attributes.idBackRequiredCountries) %} || []).includes(flow.export?.documentCountry) || {%- attributes.idBackRequiredAllCountries %}) && ['ID', 'DL'].includes(flow.export?.documentType);
+                return form.hasTags(['waiting_classification']) || !form.data.idCardFront || {% if (attributes.selfieEnabled) { %}!form.data.selfie ||{% } %} (!form.data.idCardBack && backRequired);
+              })()
+            text: !t "common.continue"
+
+      # readonly
+      - !component as: VisibilityWrapper
+        visible: !expression "(!device.isMobile || (device.isDesktop && {%- !attributes?.manualUploadDisabled %})) && !form.hasTags(['handoffBypass'])"
+        items:
+          - !component as: Interval
+            tick: !function "if (flow.namespace.results?.handoff?.previews?.['{%- attributes.uri %}' + 'idCardBack']) {form.removeTags(['handoffOpenModal'])}"
+            interval: 2000
+
+          # document
+          - !component as: Heading
+            items: !expression "t('pages.{%- attributes.uri %}.documentTitle', { label: form.data.idCardLabel })"
+
+          # show document type
+          - !component as: div
+            className: "row"
+            items:
+              - !component as: Icon
+                kind: !expression |
+                  {
+                    ['PP']: 'doc-passport',
+                    ['ID']: 'doc-id',
+                    ['DL']: 'doc-license',
+                    ['RP']:  'doc-residence'
+                  }[flow?.export.documentType]
+                size: 40
+                className: documentIcon
+              - !component as: div
+                className: switchDocument
+                items:
+                  - !component as: div
+                    className: switchDocument-name
+                    items:
+                      - !expression |
+                          {%- JSON.stringify(constants.COUNTRIES) %}[flow.export.documentCountry]
+                      - " / "
+                      - !expression |
+                        {
+                          ['PP']: t('pages.{%- attributes.uri %}.documentType.passport'),
+                          ['ID']: t('pages.{%- attributes.uri %}.documentType.government-id'),
+                          ['DL']: t('pages.{%- attributes.uri %}.documentType.drivers-license'),
+                          ['RP']: t('pages.{%- attributes.uri %}.documentType.residence-permit')
+                        }[flow.export.documentType]
+                  {% if (showDocumentSwitch) { %}
+                  - !component as: VisibilityWrapper
+                    visible: !expression "!flow?.export?.forcedDocumentType"
+                    items:
+                      - !component as: a
+                        className: CM-linkButton
+                        href: "#"
+                        onClick: !function "form.addTags(['changeDocumentTypeModal'])"
+                        items:
+                          - !t 'pages.{%- attributes.uri %}.changeDocumentType'
+                  {% } %}
+
+          # front
+          - !ref components: imagePreview
+            type: id
+            side: front
+            name: idCardFront
+            status: !expression "flow.namespace.results?.handoff?.classificationStatus"
+            uuid: !expression "flow.namespace.results?.handoff?.previews?.['{%- attributes.uri %}' + 'idCardFront']?.uuid"
+
+          # back
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              (({%- JSON.stringify(attributes.idBackRequiredCountries) %} || []).includes(flow.export?.documentCountry) || {%- attributes.idBackRequiredAllCountries %}) && ['ID', 'DL'].includes(flow.export?.documentType)
+            items:
+              - !ref components: imagePreview
+                type: id
+                side: back
+                name: idCardBack
+                status: ok
+                uuid: !expression "flow.namespace.results?.handoff?.previews?.['{%- attributes.uri %}' + 'idCardBack']?.uuid"
+
+          # selfie
+          {% if (attributes.selfieEnabled) { %}
+          - !component as: hr
+
+          - !component as: Heading
+            items: !t "pages.{%- attributes.uri %}.selfieTitle"
+
+          - !ref components: imagePreview
+            type: selfie
+            name: selfie
+            status: ok
+            uuid: !expression "flow.namespace.results?.handoff?.previews?.['{%- attributes.uri %}' + 'selfie']?.uuid"
+          {% } %}
+
+          # submit
+          - !component as: Button
+            disabled: true
+            text: !t "common.continue"
+  # modal with qr code
+  - !component as: Trigger
+    load: !function |
+      page.storage.set('numberOfSmsTries{%- attributes.uri %}', {%-attributes.smsRepeatTries + 1%});
+  - !component as: VisibilityWrapper
+    visible: !expression "locals?.handoffPage && device.isDesktop && !form.hasTags(['handoffBypass'])"
+    items:
+      - !component as: Modal
+        tag: handoffOpenModal
+        closeButton: false
+        className: handoffOpenModal
+        items:
+          - !component as: Heading
+            items: !expression |
+              {
+                ['PP']: t('pages.{%- attributes.uri %}.documentType.title.passport'),
+                ['ID']: t('pages.{%- attributes.uri %}.documentType.title.government-id'),
+                ['DL']: t('pages.{%- attributes.uri %}.documentType.title.drivers-license'),
+                ['RP']: t('pages.{%- attributes.uri %}.documentType.title.residence-permit')
+              }[flow.export.documentType]
+          - !component as: Paragraph
+            items: !t "pages.{%- attributes.uri %}.handoff.openText"
+          - !component as: div
+            className: row
+            items:
+              - !component as: VisibilityWrapper
+                visible: {%- !attributes?.smsHandOffDisabled %}
+                items:
+                  - !component as: div
+                    className: {%- attributes?.smsHandOffDisabled ? 'col col-centered' : 'col' %}
+                    items:
+                      - !component as: Heading
+                        items: !t "pages.{%- attributes.uri %}.handoff.sendSms"
+                        kind: "h2"
+                      - !component as: PhoneInput
+                        name: handoffMobile
+                        country: !expression "flow.export?.country ? flow.export?.country : window.COUNTRY"
+                        delimiter: "-"
+                        tidy: "phoneNumber"
+                        validateFormat: true
+                        formatErrorText: !t "pages.{%- attributes.uri %}.handoff.invalidMobile"
+                      - !component as: DelayedRepeatButton
+                        initialTime: {%- attributes?.smsRepeatTime ? attributes?.smsRepeatTime : 30 %}
+                        loading: !expression "app.waiting.sendHandoffSms"
+                        onClick: !function |
+                          if (app.waiting.sendHandoffSms || !form.field.handoffMobile.isValid) {
+                            return;
+                          }
+                          (async function() {
+                            try {
+                              const smsResult = await flow.function.sendHandoffSms({ language: app.locale, mobile: form.data.handoffMobile, token: flow.execution.token });
+                              analytics.event('Sent', { field: 'SMS' });
+
+                              // set this value depending on result of function
+                              page.storage.set('numberOfSmsTries{%- attributes.uri %}',smsResult.result);
+
+                            } catch(e) {
+                                console.log('Sending sms failed with error', e);
+                            }
+                          })();
+                        disabled: !expression "!form.field.handoffMobile.isFilled || !form.field.handoffMobile.isValid || page.storage.get('numberOfSmsTries{%- attributes.uri %}') <= 1"
+                        text: !t "pages.{%- attributes.uri %}.handoff.sendSmsButton"
+                        repeatText: !t "pages.{%- attributes.uri %}.handoff.sendSmsAgainButton"
+                  - !component as: div
+                    className: col
+                    items:
+                      - !component as: div
+                        className: or
+                        items: !t "pages.{%- attributes.uri %}.handoff.or"
+              - !component as: div
+                className: {%- attributes?.smsHandOffDisabled ? 'col col--centered' : 'col' %}
+                items:
+                  - !component as: Heading
+                    kind: "h2"
+                    centered: {%- attributes?.smsHandOffDisabled %}
+                    items: !t "pages.{%- attributes.uri %}.handoff.scanQRCode"
+                  - !component as: div
+                    className: "qrWrapper"
+                    items:
+                      - !component as: QRCode
+                        size: {%- attributes?.smsHandOffDisabled ? 324 : 200 %}
+                        padding: 0
+                        text: !expression "window.location.protocol + '//' + window.location.host + window.location.pathname + '?uuid=' + flow.execution.uuid + '&token=' + flow.execution.token"
+          - !component as: div
+            className: row
+            items:
+              - !component as: VisibilityWrapper
+                visible: {%- !attributes?.manualUploadDisabled %}
+                items:
+                  - !component as: div
+                    className: col
+                    items:
+                      - !component as: a
+                        className: {%- attributes?.smsHandOffDisabled ? 'text--centered' : '' %}
+                        onClick: !function "form.addTags(['handoffBypass']);"
+                        items: !t "pages.{%- attributes.uri %}.handoff.dontOwnSmartphone"
+

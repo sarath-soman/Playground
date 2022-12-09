@@ -1,0 +1,139 @@
+!component as: Fragment
+items:
+  # visibility expression
+  - !component as: "<%= field.visibleExpression ? 'VisibilityWrapper' : 'Fragment' %>"
+    <%- field.visibleExpression ? 'visible: !expression "' + field.visibleExpression + '"' : '' %>
+    items:
+      <% if (field.onlyCountries?.length) {%>
+      - !component as: VisibilityWrapper
+        visible:
+          !expression eval: "field.onlyCountries?.length ? field.onlyCountries.includes(flow?.export?.country ? flow.export.country : (form?.data?.country ? form.data.country : window.COUNTRY)) : true"
+          field: !property field
+      <% } else { %>
+      - !component as: Fragment
+      <% } %>
+        items:
+          # text
+          <% if (field.type === 'text') {  %>
+          - !component as: Input
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+            <% if (typeof field?.validation?.minLength === 'number') { %>minLength: <%- field?.validation?.minLength %><% } %>
+            <% if (typeof field?.validation?.maxLength === 'number') { %>maxLength: <%- field?.validation?.maxLength %><% } %>
+
+          # password
+          <% } else if (field.type === 'password') { %>
+          - !component as: Input
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+            <% if (typeof field?.validation?.minLength === 'number') { %>minLength: <%- field?.validation?.minLength %><% } %>
+            <% if (typeof field?.validation?.maxLength === 'number') { %>maxLength: <%- field?.validation?.maxLength %><% } %>
+
+          # integer
+          <% } else if (field.type === 'integer') { %>
+          - !component as: Input
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            type: "number"
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+            <% if (typeof field?.validation?.minimum === 'number') { %>min: <%- field?.validation?.minimum %><% } %>
+            <% if (typeof field?.validation?.maximum === 'number') { %>max: <%- field?.validation?.maximum %><% } %>
+            <% if (typeof field.step === 'number') { %>step: <%- field.step %><% } %>
+
+          # phone
+          <% } else if (field.type === 'phone') { %>
+          - !component as: PhoneInput
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            country: !expression "flow.export?.country ? flow.export?.country : (form?.data?.country ? form.data.country : window.COUNTRY)"
+            delimiter: "-"
+            tidy: "phoneNumber"
+            validateFormat: true
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+
+          # checkbox
+          <% } else if (field.type === 'checkbox') { %>
+          - !component as: Checkbox
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            <% if (typeof field.subtext === 'string') { %>subtext: !t pages.<%- uri %>.<%- field.name %>.subtext<% } %>
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+
+          # address
+          <% } else if (field.type === 'address') { %>
+          - !component as: AddressInput
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            returnType: <%= field.returnType %>
+            extraRow: !property extraRow
+            notFoundRow: !property notFoundRow
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+
+          <% if (field.showMap) { %>
+          - !component as: VisibilityWrapper
+            visible: !expression "form.field['<%- field.name %>'].isFilled"
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+            items:
+              - !component as: Map
+                address: !expression "form.data['<%- field.name %>'].formattedAddress"
+                placeId: !expression "form.data['<%- field.name %>'].placeId"
+          <% } %>
+
+          # date
+          <% } else if (field.type === 'date') { %>
+          - !component as: Datepicker
+            name: <%= field.name %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            format: !expression "format.dateFormat"
+            months: !expression "[0,1,2,3,4,5,6,7,8,9,10,11].map(i => t('months.' + i))"
+            <% if (field.limitByMinAge) { %>
+            max:
+              !expression eval: "helper.dayjs().subtract(minAge, 'years').format('YYYY-MM-DD')"
+              minAge: !property minAge
+            <% } else if (typeof field.max === 'string') { %>
+            max: <%- field.max %>
+            <% } %>
+            <% if (typeof field.min === 'string') { %>
+            min: <%- field.min %>
+            <% } %>
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+
+          # radio
+          <% } else if (field.type === 'radio') { %>
+          - !component as: Radio
+            name: <%= field.name %>
+            buttonValue: <%= field.value %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+
+          # select
+          <% } else if (field.type === 'select') { %>
+          - !component as: Select
+            name: <%= field.name %>
+            options: <%- JSON.stringify(field.options || '[]') %>
+            label: !t pages.<%- uri %>.<%- field.name %>.label
+            searchable: <%- field.searchable %>
+            disabled:
+              !expression eval: "field.disabled || (field.blockWhenPrefilled ? !!utils.getFieldUrlData({field}) : false)"
+              field: !property field
+          <% } %>

@@ -1,0 +1,520 @@
+// Zenoo DSL file generated at 2022-12-09T11:26:32.195Z
+
+
+// preinit
+dependencies {
+    component "sms"
+    component "assureid"
+    component "identity-mind"
+  }
+  exchange('AcuantGo - IdentityMind - Consumer') {
+    connector('acuantgo-identitymind-consumer')
+    timeout 60
+  }
+  exchange('AcuantGo - IdentityMind - State') {
+    connector('acuantgo-identitymind-state')
+    retryStrategy('FIX') {
+      retry 12
+      backoff 5
+    }
+    timeout 60
+  }
+  exchange('AcuantGo - IdentityMind - Merchant Upload') {
+    connector('acuantgo-identitymind-merchant-upload')
+  }
+  exchange('AcuantGo - IdentityMind - Webhook') {
+    connector('acuantgo-identitymind-webhook')
+  }
+  exchange('SMS - Hand Off SMS') {
+    connector('hand-off-sms')
+  }
+
+  function("sendHandoffSms") {
+    execution {
+      parent()
+      context smsCounter
+      namespace smsCounterParent
+    }
+    execution {
+      parent()
+      context executionUuid
+      namespace executionUuidParent
+    }
+    if (smsCounterParent as Number > 1) {
+      def contentsTranslated = [
+      
+        "en": "Hello, to capture documents and continue registration please follow this url: %url%",       
+      ]
+      
+      println contentsTranslated
+      println it.language
+      println it.language.toString()
+
+      def content = contentsTranslated.containsKey(it.language.toString()) ? contentsTranslated[it.language.toString()] : contentsTranslated['en']
+      def link = "<%- BUILD_PARAMS?.previewUrl %>"
+      def phone = it.mobile.toString().replaceAll("[\s-]+", "")
+      def token = it.token
+      def executionUuid = executionUuidParent.toString()
+
+      if (content) {
+        exchange('SMS - Hand Off SMS') {
+          namespace output
+          config content: content, phone: phone, link: link, token: token, uuid: executionUuid
+        }
+      }
+    }
+    smsCounterParent as Number - 1
+  }
+  function("setPreview") {
+    handoff.previews[it.name.toString()] << it.file
+    handoff.previews
+  }
+  function("setClassification") {
+    it.status
+  }
+  function("classificateDocument") {
+    def file = it.file
+    def side = it.side
+    exchange('AssureID - Classificate Document') {
+      namespace classificationOutput
+      config document: file, side: side, assureIDUrl: "<%- BUILD_PARAMS?.assureId?.["EU"]?.assureIdUrl %>", assureIDUserName: "<%- BUILD_PARAMS?.assureId?.["EU"]?.assureIdUserName %>", assureIDPassword: "<%- BUILD_PARAMS?.assureId?.["EU"]?.assureIdPassword %>", assureIDSubscriptionId: "<%- BUILD_PARAMS?.assureId?.["EU"]?.assureIdSubscriptionId %>"
+    }
+    classificationOutput
+  }
+  function("sendHandoffPing") {
+    it.timestamp
+  }
+  function("getAssureIdOAuthToken") {
+    def assureIdRegion = it.assureIdRegion
+    def authType = it.authType
+    exchange('AssureID - OAuth') {
+      namespace response
+      config assureIdRegion: assureIdRegion, authType: authType
+    }
+    response
+  }
+
+// path for node "p7hpwr" [-z9b2ek]
+path("node--z9b2ek") {
+    // --- begin of "WelcomeInteraction" main code ---
+    
+    visitedTokens << (visitedTokens as List) + '-z9b2ek'
+    route('-z9b2ek') {
+      uri '/welcome'
+      namespace application
+      export startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+      
+    }
+    path("node--6szt69") // path to node "-n6spxy"
+    
+    // --- end of "WelcomeInteraction" main code ---
+}
+
+// path for node "-n6spxy" [-6szt69]
+path("node--6szt69") {
+    // --- begin of "PersonalDetailsInteraction" main code ---
+    
+    
+    // mapping for "personalDetailsFirstName1" (type: basic)
+    identitymindMapping['bfn'] << [
+      'application': 'personalDetailsFirstName1',
+    ]
+    
+    // mapping for "personalDetailsLastName2" (type: basic)
+    identitymindMapping['bln'] << [
+      'application': 'personalDetailsLastName2',
+    ]
+    
+    // mapping for "personalDetailsDateOfBirth3" (type: basic)
+    identitymindMapping['dob'] << [
+      'application': 'personalDetailsDateOfBirth3',
+    ]
+    
+    
+    visitedTokens << (visitedTokens as List) + '-6szt69'
+    route('-6szt69') {
+      uri '/personal-details'
+      //validate {
+      //  
+      //    personalDetailsFirstName1
+      //    personalDetailsLastName2
+      //    personalDetailsDateOfBirth3
+      //}
+      namespace application
+      export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+      
+    }
+    path("node--bfwyrg") // path to node "-qte4st"
+    
+    // --- end of "PersonalDetailsInteraction" main code ---
+}
+
+// path for node "-qte4st" [-bfwyrg]
+path("node--bfwyrg") {
+    // --- begin of "ContactDetailsInteraction" main code ---
+    
+    
+    // mapping for "contactDetailsEmail1" (type: basic)
+    identitymindMapping['tea'] << [
+      'application': 'contactDetailsEmail1',
+    ]
+    
+    // mapping for "contactDetailsMobile2" (type: basic)
+    identitymindMapping['phn'] << [
+      'application': 'contactDetailsMobile2',
+    ]
+    
+    
+    visitedTokens << (visitedTokens as List) + '-bfwyrg'
+    route('-bfwyrg') {
+      uri '/contact-details'
+      //validate {
+      //  
+      //    contactDetailsEmail1
+      //    contactDetailsMobile2
+      //}
+      namespace application
+      export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+      
+    }
+    path("node-xxl9s7") // path to node "p1vg4o"
+    
+    // --- end of "ContactDetailsInteraction" main code ---
+}
+
+// path for node "p1vg4o" [xxl9s7]
+path("node-xxl9s7") {
+    // --- begin of "AddressInteraction" main code ---
+    
+    if (true || [].findIndexOf({ it == application.country.toString() }) > -1) {
+    
+      identitymindMapping['bc'] << [
+        "application": "city",
+      ]
+      identitymindMapping['bs'] << [
+        "application": "state",
+      ]
+      identitymindMapping['bsn'] << [
+        "application": "address",
+      ]
+      identitymindMapping['bz'] << [
+        "application": "postalCode",
+      ]
+    
+      
+    
+      visitedTokens << (visitedTokens as List) + 'xxl9s7'
+      route('xxl9s7') {
+        uri '/address'
+        //validate {
+        //  
+        //}
+        namespace application
+        export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+        
+      }
+    
+      if (application.addressCountry) {
+        application.country << application.addressCountry
+      }
+    
+    }
+    
+    
+    
+    path("node--rxyzg2") // path to node "xe4ce8"
+    
+    // --- end of "AddressInteraction" main code ---
+}
+
+// path for node "xe4ce8" [-rxyzg2]
+path("node--rxyzg2") {
+    // --- begin of "ProcessingInteraction" main code ---
+    
+    visitedTokens << (visitedTokens as List) + '-rxyzg2'
+    route('-rxyzg2') {
+      uri '/edna-processing'
+      namespace application
+      export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+      
+    }
+    
+    requestFields << [:]
+    requestFiles << [:]
+    
+    identitymindMapping['profile'] << [
+        'static': 'ico_id',
+    ]
+    identitymindMapping['stage'] << [
+        'static': 3,
+    ]
+    if (application?.tacAgreement) {
+      identitymindMapping['memo0'] << [
+        'static': 'accepted terms and conditions',
+      ]
+    }
+    (identitymindMapping as Map).each{ key, val ->
+        if (val.static) {
+            requestFields[key] << val.static
+        } else if (val.application) {
+            def appKey = val.application.toString()
+            if (application[appKey]) {
+                requestFields[key] << application[appKey]
+            } else if (val.default) {
+                requestFields[key] << val.default
+            }
+        } else if (val.uploads) {
+            def upKey = val.uploads.toString()
+            if (uploads[upKey]) {
+                requestFiles[key] << uploads[upKey]
+            }
+        }
+    }
+    
+    (identitymindMemos as List).each{ val ->
+        def key = null
+        for(int i = 1; i < 99; i++) {
+            if (!requestFields['memo' + i.toString()]) {
+                key = 'memo' + i.toString()
+                break
+            }
+        }
+        if (key) {
+            if (val.static) {
+                requestFields[key] << val.static
+            } else if (val.application) {
+                def appKey = val.application.toString()
+                if (application[appKey]) {
+                    requestFields[key] << application[appKey]
+                } else if (val.default) {
+                    requestFields[key] << val.default
+                }
+            }
+        }
+    }
+    
+    // fill up man
+    if (!requestFields['man']) {
+        if (requestFields['tea']) {
+            requestFields['man'] << requestFields['tea']
+        } else if (requestFields['phn']) {
+            requestFields['man'] << requestFields['phn']
+        } else if (requestFields['bfn'] && requestFields['bln']) {
+            requestFields['man'] << requestFields['bfn'].toString() + ' ' + requestFields['bln'].toString()
+        } else {
+            requestFields['man'] << identitymindManRandom
+        }
+    }
+    
+    // data mapping
+    if (requestFields['assn']) {
+        requestFields['assn'] << application.country.toString() + ':' + requestFields['assn'].toString().replaceAll("[^\\d]", "")
+    }
+    if (requestFields['assn1']) {
+        requestFields['assn1'] << application.country.toString() + ':' + requestFields['assn1'].toString().replaceAll("[^\\d]", "")
+    }
+    if (requestFields['assn2']) {
+        requestFields['assn2'] << application.country.toString() + ':' + requestFields['assn2'].toString().replaceAll("[^\\d]", "")
+    }
+    if (requestFields['dob']) {
+        requestFields['dob'] << (new java.text.SimpleDateFormat('yyyy-MM-dd')).format((new java.text.SimpleDateFormat('MM/dd/yyyy')).parse(requestFields['dob'].toString()))
+    }
+    
+    identityMindResult << exchange('AcuantGo - IdentityMind - Consumer') {
+        config organizationId: 999, environment: "STG", requestFields: requestFields, requestFiles: requestFiles
+    }
+    
+    if (identityMindResult) {
+        if (identityMindResult.tid) {
+            identitymindMapping['tid'] << [
+                'static': identityMindResult.tid.toString(),
+            ]
+    
+            def filesToUpload = (identitymindAttachments as List)
+            for(file in filesToUpload){
+                exchange('AcuantGo - IdentityMind - Merchant Upload') {
+                    config organizationId: 999, environment: "STG", appId: identityMindResult.tid.toString(), document: file
+                }
+            }
+            identitymindAttachments << []
+        }
+    }
+    
+    if (identityMindResult) {
+        if (identityMindResult.tid) {
+            identityMindStateResult << exchange('AcuantGo - IdentityMind - State') {
+                config organizationId: 999, environment: "STG", retriesWhileDvFinish: true, tid: identityMindResult.tid.toString()
+            }
+        }
+    }
+    
+    path("node-pob4ob") // path to node "igg27e"
+    // --- end of "ProcessingInteraction" main code ---
+}
+
+// path for node "igg27e" [pob4ob]
+path("node-pob4ob") {
+    // --- begin of "DoneInteraction" main code ---
+    
+    redirectUrl << ""
+    try {
+      if (webhookRequestResponse && webhookRequestResponse.redirect) {
+        def urlString = webhookRequestResponse.redirect.toString()
+        if (urlString.startsWith("http://") || urlString.startsWith("https://")) {
+          redirectUrl << urlString
+        }
+      }
+    } catch(Exception e) {
+    }
+    
+    identityMindFinalState << ""
+    if (identityMindResult) {
+      if (identityMindResult.state) {
+          identityMindFinalState << identityMindResult.state.toString()
+      }
+    }
+    // override state from identityMindStateResult if exists 
+    if (identityMindStateResult) {
+      if (identityMindStateResult.state) {
+        identityMindFinalState << identityMindStateResult.state.toString()
+      }
+    }
+    
+    visitedTokens << (visitedTokens as List) + 'pob4ob'
+    route('pob4ob') {
+      uri '/done'
+      export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens, identityMindResult: identityMindResult, identityMindStateResult: identityMindStateResult, identityMindFinalState: identityMindFinalState, redirectUrl: redirectUrl
+      terminal()
+    }
+    // terminal node, no output path
+    
+    // --- end of "DoneInteraction" main code ---
+}
+
+
+// register workflow
+workflow ("sdad") {
+    
+    // workflow additions
+    if (it.urlData) {
+        application << it.urlData
+      }
+    
+      if (it.documentCountry && it.documentType) {
+        application.documentCountry << it.documentCountry
+        application.documentType << it.documentType
+        forcedDocumentType << true
+      }
+    
+      startedOnDesktop << it.startedOnDesktop
+      visitedTokens << []
+      handoff.previews << [:]
+      handoff.lastHandoffTimestamp << 0
+      handoff.classificationStatus << ""
+      export handoff
+    
+      uploads << [:]
+      export uploads
+    
+      smsCounter << 0
+      executionUuid << uuid
+    
+      // random for "man" field
+      def generator = { String alphabet, int n ->
+        new Random().with {
+          (1..n).collect { alphabet[ nextInt( alphabet.length() ) ] }.join()
+        }
+      }
+      identitymindManRandom << generator((('A'..'Z')+('0'..'9')).join(), 10)
+    
+      identitymindAttachments << []
+    
+      identitymindMemos << []
+      identitymindMapping << [
+        // basic
+        "profile": [
+          "static": "DEFAULT",
+        ],
+        "stage": [
+          "static": 3,
+        ],
+        "ip": [
+          "application": "ip",
+        ],
+        "dfp": [
+          "application": "dfp",
+        ],
+        "dft": [
+          "static": "IO",
+        ],
+        // welcome
+        "bco": [
+          "application": "country",
+        ],
+        // one-to-one mappings
+        "tid": [
+          "application": "tid",
+        ],
+        "bc": [
+          "application": "bc",
+        ],
+        "bfn": [
+            "application": "bfn",
+        ],
+        "bln": [
+            "application": "bln",
+        ],
+        "bs": [
+            "application": "bs",
+        ],
+        "bsn": [
+            "application": "bsn",
+        ],
+        "bz": [
+            "application": "bz",
+        ],
+        "dob": [
+            "application": "dob",
+        ],
+        "pbc": [
+            "application": "pbc",
+        ],
+        "phn": [
+            "application": "phn",
+        ],
+        "tea": [
+            "application": "tea",
+        ],
+        "assn": [
+            "application": "assn",
+        ],
+        "man": [
+            "application": "man",
+        ],
+        // verify
+        "docCountry": [
+          "application": "documentCountry",
+        ],
+        "docType": [
+          "application": "documentType",
+        ],
+        // uploads
+        "faceImages[]": [
+          "uploads": "selfie",
+        ],
+        "scanData": [
+          "uploads": "idCardFront",
+        ],
+        "backsideImageData": [
+          "uploads": "idCardBack",
+        ],
+        "memo0": [
+          'static': '',
+        ]
+      ]
+    
+      webhookMapping << [:]
+    
+    // start first node
+    path("node--z9b2ek")
+}

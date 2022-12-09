@@ -1,0 +1,8 @@
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+route('{%- token %}') {
+  uri '/{%- attributes.uri %}'
+  namespace application
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+{%- outputPath() %}

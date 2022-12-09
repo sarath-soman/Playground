@@ -1,0 +1,72 @@
+styles:
+  - !include ./gdpr-agreement.less
+!component as: Modal
+className: "CM-gdprAgreement"
+shouldCloseOnOverlayClick: true
+tag: gdprAgreementModal
+closeButton: true
+items:
+  - !component as: Heading
+    items: !t "gdprAgreement.modal.heading"
+  - !component as: div
+    items: !te "legal.gdpr"
+  - !component as: section
+    items:
+      - !component as: div
+        className: "container"
+        items:
+          - !component as: span
+            className: "bold"
+            items: !t "gdprAgreement.modal.additionalInformation"
+          - !component as: span
+            className: "bold"
+            items:
+              !t text: "gdprAgreement.modal.company"
+              company: !expression "globals.gdpr.companyName"
+          - !component as: input
+            id: toggleDetails
+            type: checkbox
+          - !component as: label
+            htmlFor: toggleDetails
+            items:
+              - !component as: span
+                className: "label"
+                id: "labelDetails"
+                items: !t "gdprAgreement.modal.details"
+              - !component as: span
+                className: "label"
+                id: "labelHide"
+                items: !t "gdprAgreement.modal.hide"
+          - !component as: div
+            id: "details"
+            items:
+              - !component as: a
+                href: !expression "globals.gdpr.urlCompanyWebsite"
+                target: "_blank"
+                items: !expression "globals.gdpr.urlCompanyWebsite"
+              - !component as: span
+                items: !expression "globals.gdpr.address"
+              - !component as: span
+                items: !expression "globals.gdpr.officerName"
+              - !component as: span
+                items: !expression "globals.gdpr.urlLearnMoreAboutYourRights"
+          - !component as: div
+            id: "overview"
+            items:
+              - !component as: a
+                href: !expression "globals.gdpr.urlCompanyWebsite"
+                target: "_blank"
+                items: !expression "globals.gdpr.urlCompanyWebsite"
+              - !component as: div
+                className: "delimiter"
+              - !component as: span
+                className: "bold"
+                items: !t "gdprAgreement.modal.processorName"
+              - !component as: span
+                className: "bold"
+                items: !t "gdprAgreement.modal.dataProcessor"
+              - !component as: a
+                href: !t "gdprAgreement.modal.processorUrl"
+                target: "_blank"
+                items: !t "gdprAgreement.modal.processorUrl"
+

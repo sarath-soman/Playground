@@ -1,0 +1,11 @@
+{
+  "otp": {
+    "mobile": "+852 1234 1234"
+  },
+  "basic-info": {
+    "titleList": {
+      "Mr.": "Mr.",
+      "Mrs.": "Mrs."
+    }
+  }
+}

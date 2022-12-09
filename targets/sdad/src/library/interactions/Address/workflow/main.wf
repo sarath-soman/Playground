@@ -1,0 +1,78 @@
+if ({%- attributes?.addressRequiredAllCountries || false %} || {%- JSON.stringify(attributes?.addressRequiredCountries || []) %}.findIndexOf({ it == application.country.toString() }) > -1) {
+
+  identitymindMapping['bc'] << [
+    "application": "city",
+  ]
+  identitymindMapping['bs'] << [
+    "application": "state",
+  ]
+  identitymindMapping['bsn'] << [
+    "application": "address",
+  ]
+  identitymindMapping['bz'] << [
+    "application": "postalCode",
+  ]
+
+  {% for(const field of outputs) { %}{% if (field?.ednaField) { %}
+  // mapping for "{%- field?.name %}" (type: {%- field?.ednaType %}){% if (field?.ednaType === 'basic' && field?.ednaBasicName) { %}
+  identitymindMapping['{%- field?.ednaBasicName %}'] << [
+    'application': '{%- field.name %}',
+  ]
+  {% } %}{% if (field?.ednaType === 'custom' && field?.ednaCustomName) { %}
+  identitymindMapping['{%- field?.ednaCustomName %}'] << [
+    'application': '{%- field.name %}',
+  ]
+  {% } %}{% if (field?.ednaType === 'memo') { %}
+  identitymindMemos << (identitymindMemos as List) + [
+    'application': '{%- field.name %}',
+  ]
+  {% } %}{% } %}{% if (field?.webhookField && field?.webhookFieldName) { %}
+  // webhook mapping for "{%- field?.name %}"
+  webhookMapping['{%- field?.webhookFieldName %}'] << [
+    'application': '{%- field.name %}',
+  ]{% } %}{% } %}
+
+  visitedTokens << (visitedTokens as List) + '{%- token %}'
+  route('{%- token %}') {
+    uri '/{%- attributes.uri %}'
+    //validate {
+    //  {%for(const field of outputs){ %}
+    //    {%=field.name%}{%}%}
+    //}
+    namespace application
+    export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+    {% if (isTerminal) { %}terminal(){% } %}
+  }
+
+  if (application.addressCountry) {
+    application.country << application.addressCountry
+  }
+
+}
+
+{% if (attributes?.webhookSendEnabled) { %}
+// webhook mappings
+{% if (attributes?.webhookAddressLine1Name) { %}
+webhookMapping['{%- attributes?.webhookAddressLine1Name %}'] << [
+  'application': 'address',
+]
+{% } %}{% if (attributes?.webhookAddressLine2Name) { %}
+webhookMapping['{%- attributes?.webhookAddressLine2Name %}'] << [
+  'application': 'address2',
+]
+{% } %}{% if (attributes?.webhookAddressPostcodeName) { %}
+webhookMapping['{%- attributes?.webhookAddressPostcodeName %}'] << [
+  'application': 'postalCode',
+]
+{% } %}{% if (attributes?.webhookAddressCityName) { %}
+webhookMapping['{%- attributes?.webhookAddressCityName %}'] << [
+  'application': 'city',
+]
+{% } %}{% if (attributes?.webhookAddressStateName) { %}
+webhookMapping['{%- attributes?.webhookAddressStateName %}'] << [
+  'application': 'state',
+]
+{% } %}
+{% } %}
+
+{%- outputPath() %}

@@ -1,0 +1,73 @@
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+styles:
+  - !include ../styles/{%- attributes.uri %}-{%- token %}.less
+defaults:
+  country: !expression "window.COUNTRY"
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      # Title and heading
+      - !component as: Heading
+        items: !te "welcome.title"
+
+      - !component as: Paragraph
+        items: !te "welcome.text"
+
+      - !component as: Heading
+        kind: "h2"
+        items: !t "welcome.subTitle"
+
+      - !component as: ContentBox
+        items:
+          - !component as: VisibilityWrapper
+            visible: !expression "utils.containsVerificationStep()"
+            items:
+              - !component as: div
+                className: "row"
+                items:
+                  - !component as: Icon
+                    kind: "doc-id"
+                  - !component as: div
+                    className: "iconText"
+                    items: !t "welcome.identityCard"
+          - !component as: VisibilityWrapper
+            visible: !expression "!device.isMobile && utils.containsVerificationStep()"
+            items:
+              - !component as: div
+                className: "row"
+                items:
+                  - !component as: Icon
+                    kind: "mobile"
+                  - !component as: div
+                    className: "iconText"
+                    items: !t "welcome.mobilePhone"
+          - !component as: div
+            className: "row"
+            items:
+              - !component as: Icon
+                kind: "email"
+              - !component as: div
+                className: "iconText"
+                items: !t "welcome.email"
+
+      # Continue
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"
+

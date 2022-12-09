@@ -1,0 +1,21 @@
+!component as: Modal
+className: "CM-markdownModal"
+shouldCloseOnOverlayClick: true
+shouldCloseOnEscClick: true
+tag: tacAgreementModal
+closeButton: true
+items:
+  - !component as: Heading
+    items: "Website terms and conditions"
+  - !component as: div
+    className: "CM-markdownModal__content"
+    items: !te "legal.tac"
+  - !component as: TagButton
+    tag: tacAgreementModal
+    onClick: !expression |
+      () => {
+        form.changeValue('tacAgreement', true);
+        analytics.event('Accepted', { field: 'Agreements' });
+      }
+    remove: true
+    text: !t "common.accept"

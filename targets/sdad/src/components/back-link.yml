@@ -1,0 +1,11 @@
+!component as: VisibilityWrapper
+visible: !expression "this.flow && flow.backEnabled"
+items:
+  - !component as: LinkButton
+    actionName: flowBack
+    notValidated: true
+    leftIcon: caret-left
+    text:
+      - !component as: Fragment
+        !condition include: typeof withText !== 'undefined'
+        items: !expression "t('common.back')"

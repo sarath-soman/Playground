@@ -1,0 +1,95 @@
+.CM-gdprAgreement {
+  span {
+    display: block;
+    font-size: 14px;
+    line-height: 21px;
+
+    &.bold {
+      font-weight: bold;
+    }
+    &.label {
+      display: inline;
+      cursor: pointer;
+    }
+  }
+
+  #details {
+    display: none;
+  }
+
+  #labelDetails {
+    display: inline;
+  }
+
+  #labelHide {
+    display: none;
+  }
+
+  input[type='checkbox'] {
+    display: none;
+
+    &:checked {
+      ~ #details {
+        display: block;
+      }
+
+      ~ #overview {
+        display: none;
+      }
+
+      ~ label > #labelHide {
+        display: inline;
+      }
+
+      ~ label > #labelDetails {
+        display: none;
+      }
+    }
+  }
+
+  .delimiter {
+    padding-top: 12px;
+  }
+
+  section {
+    margin-top: 20px;
+    background-color: var(--base-body-background);
+
+    .container {
+      padding: 15px 18px;
+    }
+  }
+
+  &__wrapper {
+    max-width: 420px;
+  }
+
+  &__content {
+    padding-left: 31px;
+    padding-right: 31px;
+
+    div {
+      font-size: 14px;
+      line-height: 21px;
+    }
+  }
+
+  &__button-close-wrapper {
+    display: flex;
+    justify-content: flex-end;
+
+    &:before,
+    &:after {
+      content: '';
+      height: 15px;
+      width: 2px;
+      background-color: black;
+    }
+    &:before {
+      transform: rotate(45deg);
+    }
+    &:after {
+      transform: rotate(-45deg);
+    }
+  }
+}

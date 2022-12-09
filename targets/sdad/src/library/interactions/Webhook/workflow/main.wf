@@ -1,0 +1,104 @@
+{% if(attributes.webhookUrl
+    && /^(?:(?:https?):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z0-9]-*)*[a-z0-9]+)(?:\.(?:[a-z0-9]-*)*[a-z0-9]+)*(?:\.(?:[a-z]{2,}))\.?)(?::\d{2,5})?(?:[\/?#]\S*)?$/.test(attributes.webhookUrl)) { %}
+    // Webhook - begin
+    def webhookFields = [:]
+    def webhookFilesMap = [:]
+
+    {% if(attributes.webhookIncludeEdnaFields) { %}
+        if (requestFields['stage']) {
+            webhookFields['stage'] = requestFields['stage']
+        }
+        if (requestFields['profile']) {
+            webhookFields['profile'] = requestFields['profile']
+        }
+        if (requestFields['man']) {
+            webhookFields['man'] = requestFields['man']
+        }
+    {% } %}
+    {% if(attributes.webhookIncludeFingerprintFields) { %}
+        if (application['ip']) {
+            webhookFields['ip'] = application['ip']
+        }
+        if (application['dfp']) {
+            webhookFields['dfp'] = application['dfp']
+            webhookFields['dft'] = "IO"
+        }
+    {% } %}
+    {% if(attributes.webhookIncludeCountry && attributes.webhookIncludeCountryName) { %}
+        if (application['country']) {
+            webhookFields['{%- globals?.integration?.webhookIncludeCountryName %}'] = application['country']
+        }
+    {% } %}
+
+
+    (webhookMapping as Map).each{ key, val ->
+        if (val.static) {
+            webhookFields[key] = val.static
+        } else if (val.application) {
+            def appKey = val.application.toString()
+            if (application[appKey]) {
+                webhookFields[key] = application[appKey]
+            } else if (val.default) {
+                webhookFields[key] = val.default
+            }
+        } else if (val.uploads) {
+            def upKey = val.uploads.toString()
+            if (uploads[upKey]) {
+                webhookFilesMap["data." + key] = uploads[upKey]
+            }
+        }
+    }
+
+    def webhookPayloadTid = ""
+    def webhookPayloadState = ""
+    def webhookPayloadKycResult = ""
+    if (identityMindResult) {
+        if (identityMindResult.tid) {
+            webhookPayloadTid = identityMindResult.tid.toString()
+        }
+        if (identityMindResult.state) {
+            if (identityMindResult.state.toString() == "A") {
+                webhookPayloadState = 'ACCEPT'
+            } else if (identityMindResult.state.toString() == "D") {
+                webhookPayloadState = 'DENY'
+            } else if (identityMindResult.state.toString() == "R") {
+                webhookPayloadState = 'MANUAL_REVIEW'
+            }
+        }
+        if (identityMindResult.res) {
+            webhookPayloadKycResult = identityMindResult.res.toString()
+        }
+    }
+
+    // override state from identityMindStateResult if exists
+    if (identityMindStateResult) {
+        if (identityMindStateResult.state) {
+            if (identityMindStateResult.state.toString() == "A") {
+                webhookPayloadState = 'ACCEPT'
+            } else if (identityMindStateResult.state.toString() == "D") {
+                webhookPayloadState = 'DENY'
+            } else if (identityMindStateResult.state.toString() == "R") {
+                webhookPayloadState = 'MANUAL_REVIEW'
+            }
+        }
+    }
+
+    def webhookPayload = [
+        data: (webhookFields as Map),
+        tid: webhookPayloadTid.toString(),
+        state: webhookPayloadState.toString(),
+        kyc_result: webhookPayloadKycResult.toString(),
+    ]
+
+    webhookRequestResponse << exchange('AcuantGo - IdentityMind - Webhook') {
+        config url: "{%- attributes.webhookUrl || '' %}",
+            filesMap: webhookFilesMap,
+            payload: webhookPayload,
+            jwtEnabled: {%- attributes.jwtEnabled || false %},
+            jwtSecret: "{%- attributes.jwtSecret || '' %}"
+    }
+
+    // Webhook - end
+{% } %}
+
+{%- outputPath() %}

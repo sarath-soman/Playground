@@ -1,0 +1,216 @@
+{%
+const documentTypes = attributes?.documentTypes?.length ? attributes?.documentTypes : ['PP', 'ID', 'DL', 'RP'];
+const documentCountries = Object.keys(constants.COUNTRIES).filter((countryCode) => ((attributes.whitelistCountries?.length) ? (attributes.whitelistCountries?.indexOf(countryCode) > -1) : true) && ((attributes.blacklistCountries?.length) ? (attributes.blacklistCountries?.indexOf(countryCode) === -1) : true));
+%}
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+  fields:
+    documentType:
+      change:
+        eventName: "Input"
+        data:
+          field: "Document type"
+    documentCountry:
+      change:
+        eventName: "Input"
+        data:
+          field: "Issued Country"
+      focus:
+        eventName: "Clicked"
+        data:
+          field: "Issued Country"
+schema:
+  required:
+    - documentCountry
+    - documentType
+  properties:
+    documentCountry:
+      type: "string"
+      minLength: 2
+      maxLength: 2
+    documentType:
+      type: "string"
+      minLength: 2
+  errorMessage:
+    _: !expression |
+      (function() {
+        return '{field} ' +t('errors.required')
+      })()
+styles:
+  - !include ../styles/document-type-{%- attributes.uri %}-{%- token %}.less
+defaults:
+  documentCountry: !expression "flow?.export?.country"
+  documentType: !expression |
+    (function() {
+      const types = {%- JSON.stringify(documentTypes)%};
+      if (types.length === 1) {
+        return types[0];
+      }
+      return undefined;
+    })()
+items:
+  - !component as: Trigger
+    value: !expression "form?.data?.country"
+    change: !function |
+      if (!form?.data?.documentCountry && form?.data?.country) {
+        form.changeValue('documentCountry', form?.data?.country)
+      }
+  - !ref components: layoutWithSidebar
+    activeStep: 4
+    items:
+      - !component as: Heading
+        items: !expression |
+          (function() {
+            let key = 'universal';
+
+            if ({%- JSON.stringify(documentTypes)%}.length === 1) {
+              const onlyType = {%- JSON.stringify(documentTypes)%}[0];
+              key = {
+                ['PP']: 'passport',
+                ['ID']: 'government-id',
+                ['DL']: 'drivers-license',
+                ['RP']: 'residence-permit'
+              }[onlyType];
+            }
+
+            return t('pages.{%- attributes.uri %}.documentType.title.' + key )
+          })()
+      - !component as: Paragraph
+        items: !expression |
+          (function() {
+            const oneType = {%- JSON.stringify(documentTypes)%}.length === 1
+            const oneCountry = {%- JSON.stringify(documentCountries)%}.length === 1
+
+            if (oneType) {
+              return t('pages.{%- attributes.uri %}.documentType.text.countryOnly');
+            } else if (oneCountry) {
+              return t('pages.{%- attributes.uri %}.documentType.text.typeOnly');
+            }
+
+            return t('pages.{%- attributes.uri %}.documentType.text.countryAndType');
+          })()
+
+      {% if (documentTypes.length > 1) { %}
+      # mobile only
+      - !component as: div
+        className: "mobile-only"
+        items:
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('PP') > -1
+            items:
+              - !component as: Radio
+                name: documentType
+                buttonValue: PP
+                label: !t 'pages.{%- attributes.uri %}.documentType.passport'
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('ID') > -1
+            items:
+              - !component as: Radio
+                name: documentType
+                buttonValue: ID
+                label: !t 'pages.{%- attributes.uri %}.documentType.government-id'
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('DL') > -1
+            items:
+              - !component as: Radio
+                name: documentType
+                buttonValue: DL
+                label: !t "pages.{%- attributes.uri %}.documentType.drivers-license"
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('RP') > -1
+            items:
+              - !component as: Radio
+                name: documentType
+                buttonValue: RP
+                label: !t "pages.{%- attributes.uri %}.documentType.residence-permit"
+
+      # everything not mobile
+      - !component as: div
+        className: "desktop-only"
+        items:
+          - !component as: div
+            className: UI-IdTypeSelect
+            items:
+              - !component as: VisibilityWrapper
+                visible: !expression |
+                  !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('PP') > -1
+                items:
+                  - !component as: div
+                    onClick: !function |
+                      form.changeValue('documentType', 'PP');
+                      analytics.event('Input', { field: "Document type" });
+                    className: !expression "'UI-IdTypeSelect-box ' + (form.data.documentType === 'PP' ? 'UI-IdTypeSelect-box--selected' : '')"
+                    items:
+                      - !component as: Icon
+                        kind: "doc-passport"
+                      - !expression "t('pages.{%- attributes.uri %}.documentType.passport')"
+              - !component as: VisibilityWrapper
+                visible: !expression |
+                  !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('ID') > -1
+                items:
+                  - !component as: div
+                    onClick: !function |
+                      form.changeValue('documentType', 'ID');
+                      analytics.event('Input', { field: "Document type" });
+                    className: !expression "'UI-IdTypeSelect-box ' + (form.data.documentType === 'ID' ? 'UI-IdTypeSelect-box--selected' : '')"
+                    items:
+                      - !component as: Icon
+                        kind: "doc-id"
+                      - !expression "t('pages.{%- attributes.uri %}.documentType.government-id')"
+              - !component as: VisibilityWrapper
+                visible: !expression |
+                  !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('DL') > -1
+                items:
+                  - !component as: div
+                    onClick: !function |
+                      form.changeValue('documentType', 'DL');
+                      analytics.event('Input', { field: "Document type" });
+                    className: !expression "'UI-IdTypeSelect-box ' + (form.data.documentType === 'DL' ? 'UI-IdTypeSelect-box--selected' : '')"
+                    items:
+                      - !component as: Icon
+                        kind: "doc-license"
+                      - !expression "t('pages.{%- attributes.uri %}.documentType.drivers-license')"
+              - !component as: VisibilityWrapper
+                visible: !expression |
+                  !{%- JSON.stringify(documentTypes)%}.length || {%- JSON.stringify(documentTypes)%}.indexOf('RP') > -1
+                items:
+                  - !component as: div
+                    onClick: !function |
+                      form.changeValue('documentType', 'RP');
+                      analytics.event('Input', { field: "Document type" });
+                    className: !expression "'UI-IdTypeSelect-box ' + (form.data.documentType === 'RP' ? 'UI-IdTypeSelect-box--selected' : '')"
+                    items:
+                      - !component as: Icon
+                        kind: "doc-residence"
+                      - !expression "t('pages.{%- attributes.uri %}.documentType.residence-permit')"
+      {% } %}
+      {% if (documentCountries.length > 1) { %}
+      - !component as: Select
+        name: documentCountry
+        label: !t 'pages.{%- attributes.uri %}.documentType.country'
+        options: {%- JSON.stringify( Object.keys(constants.COUNTRIES).filter((countryCode) => ((attributes.whitelistCountries?.length) ? (attributes.whitelistCountries?.indexOf(countryCode) > -1) : true) && ((attributes.blacklistCountries?.length) ? (attributes.blacklistCountries?.indexOf(countryCode) === -1) : true)).reduce((obj, countryCode) => ({ ...obj, [countryCode]: constants.COUNTRIES[countryCode] }), {}) ) %}
+        searchable: true
+      {% } %}
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"
+        textDisabled: !t "common.buttonDisabled"

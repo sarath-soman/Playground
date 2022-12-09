@@ -1,0 +1,31 @@
+{% for(const field of outputs) { %}{% if (field?.ednaField) { %}
+// mapping for "{%- field?.name %}" (type: {%- field?.ednaType %}){% if (field?.ednaType === 'basic' && field?.ednaBasicName) { %}
+identitymindMapping['{%- field?.ednaBasicName %}'] << [
+  'application': '{%- field.name %}',
+]
+{% } %}{% if (field?.ednaType === 'custom' && field?.ednaCustomName) { %}
+identitymindMapping['{%- field?.ednaCustomName %}'] << [
+  'application': '{%- field.name %}',
+]
+{% } %}{% if (field?.ednaType === 'memo') { %}
+identitymindMemos << (identitymindMemos as List) + [
+  'application': '{%- field.name %}',
+]
+{% } %}{% } %}{% if (field?.webhookField && field?.webhookFieldName) { %}
+// webhook mapping for "{%- field?.name %}"
+webhookMapping['{%- field?.webhookFieldName %}'] << [
+  'application': '{%- field.name %}',
+]{% } %}{% } %}
+
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+route('{%- token %}') {
+  uri '/{%- attributes.uri %}'
+  //validate {
+  //  {%for(const field of outputs){ %}
+  //    {%=field.name%}{%}%}
+  //}
+  namespace application
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+{%- outputPath() %}

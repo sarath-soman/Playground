@@ -1,0 +1,85 @@
+visitedTokens << (visitedTokens as List) + '{%- token %}'
+{%
+const documentTypes = attributes.documentTypes?.length ? attributes.documentTypes : ['PP', 'ID', 'DL', 'RP'];
+const documentCountries = Object.keys(constants.COUNTRIES).filter((countryCode) => ((attributes.whitelistCountries?.length) ? (attributes.whitelistCountries?.indexOf(countryCode) > -1) : true) && ((attributes.blacklistCountries?.length) ? (attributes.blacklistCountries?.indexOf(countryCode) === -1) : true));
+const showDocumentType = documentTypes.length > 1 || documentCountries.length > 1;
+%}
+
+if (!forcedDocumentType) {
+  {% if (showDocumentType) { %}
+  route('document-type-{%- token %}') {
+    uri '/document-type-{%- attributes.uri %}'
+    namespace application
+    export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens
+  }
+  {% } %}
+}
+
+{% if (documentCountries.length === 1) { %}application.documentCountry << "{%- documentCountries[0] %}"{% } %}
+{% if (documentTypes.length === 1) { %}application.documentType << "{%- documentTypes[0] %}"{% } %}
+
+// find "phn" field, if exist
+mobile << ""
+(identitymindMapping as Map).each{ key, val ->
+  if (key == 'phn') {
+    if (val.application) {
+      def appKey = val.application.toString()
+      if (application[appKey]) {
+        mobile << application[appKey]
+      }
+    }
+  }
+}
+
+smsCounter << {%-attributes.smsRepeatTries + 1%}
+
+{% if (attributes?.webhookSendEnabled) { %}
+// webhook mappings
+{% if (attributes?.webhookSelfieName) { %}
+webhookMapping['{%- attributes?.webhookSelfieName %}'] << [
+  'uploads': 'selfie',
+]
+{% } %}{% if (attributes?.webhookDocumentFrontName) { %}
+webhookMapping['{%- attributes?.webhookDocumentFrontName %}'] << [
+  'uploads': 'idCardFront',
+]
+{% } %}{% if (attributes?.webhookDocumentBackName) { %}
+webhookMapping['{%- attributes?.webhookDocumentBackName %}'] << [
+  'uploads': 'idCardBack',
+]
+{% } %}{% if (attributes?.webhookDocumentType) { %}
+webhookMapping['{%- attributes?.webhookDocumentType %}'] << [
+  'application': 'documentType',
+]
+{% } %}{% if (attributes?.webhookDocumentCountry) { %}
+webhookMapping['{%- attributes?.webhookDocumentCountry %}'] << [
+  'application': 'documentCountry',
+]
+{% } %}
+{% } %}
+
+route('upload-{%- token %}') {
+  uri '/upload-{%- attributes.uri %}'
+
+  namespace uploads
+
+  function("setPreview") {
+    namespace handoff.previews
+  }
+  function("sendHandoffSms") {
+    namespace smsCounter
+  }
+  function("sendHandoffPing") {
+    namespace handoff.lastHandoffTimestamp
+  }
+  function("classificateDocument") {}
+  function("setClassification") {
+    namespace handoff.classificationStatus
+  }
+  function("getAssureIdOAuthToken") {}
+  export country: application.country, startedOnDesktop: startedOnDesktop, visitedTokens: visitedTokens, documentCountry: application.documentCountry, documentType: application.documentType, mobile: mobile, forcedDocumentType: forcedDocumentType
+  {% if (isTerminal) { %}terminal(){% } %}
+}
+handoff.previews << [:]
+handoff.lastHandoffTimestamp << 0
+{%- outputPath() %}

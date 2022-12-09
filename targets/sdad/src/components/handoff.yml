@@ -1,0 +1,94 @@
+styles:
+  - !include ./handoff.less
+!component as: Fragment
+items:
+  - !component as: Trigger
+    load: !function |
+      flow.namespace.uploads()
+
+      setTimeout(() => {
+        utils.getFieldUrlData();
+        if (flow.export?.mobile) {
+          form.changeValue('handoffMobile', flow.export?.mobile)
+        } else if (window._urlData_?.phn) {
+          form.changeValue('handoffMobile', window._urlData_?.phn)
+        }
+      }, 1);
+
+  # Goto handoff
+  - !component as: VisibilityWrapper
+    visible: !expression "locals?.handoffPage && device.isDesktop && !form.hasTags(['handoffBypass'])"
+    items:
+      # open modal
+      - !component as: Trigger
+        load: !function "form.addTags(['handoffOpenModal']);"
+      # refresh state of flow and also check if handoff is opened
+      - !component as: Interval
+        skipAwaited: true
+        tick: !function |
+          return flow.refresh()
+            .then(() => flow.namespace.handoff())
+            .then(() => {
+              const lastTimestamp = flow.namespace.results?.handoff?.lastHandoffTimestamp || 0
+              const delta = helper.dayjs().unix() - lastTimestamp;
+              if (delta > 30) {
+                form.addTags(['handoffOpenModal']);
+              } else {
+                form.removeTags(['handoffOpenModal']);
+              }
+            });
+        interval: 4000
+
+  # Goto Back from handoff
+  - !component as: VisibilityWrapper
+    visible: !expression "!locals?.handoffPage && device.isMobile && flow.export.startedOnDesktop && !form.hasTags(['handoffBypass'])"
+    items:
+      # open modal
+      - !component as: Trigger
+        load: !function |
+          form.addTags(['handoffCloseModal']);
+          analytics.event('Completed', { field: 'Handoff' });
+      # refresh state of flow
+      - !component as: Interval
+        skipAwaited: true
+        tick: !function "return flow.refresh()"
+        interval: 5000
+      # modal with qr code
+      - !component as: Modal
+        tag: handoffCloseModal
+        closeButton: false
+        className: handoffCloseModal
+        items:
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              !!flow.namespace.results?.uploads.idCardFront
+            items:
+              - !component as: div
+                className: icon
+              - !component as: Heading
+                items: !t "handoff.continueOnDesktopUploadedTitle"
+              - !component as: Paragraph
+                items: !t "handoff.continueOnDesktopUploadedText"
+          - !component as: VisibilityWrapper
+            visible: !expression |
+              typeof flow.namespace.results?.uploads.idCardFront === 'undefined'
+            items:
+              - !component as: div
+                className: icon
+              - !component as: Heading
+                items: !t "handoff.continueOnDesktopTitle"
+              - !component as: Paragraph
+                items: !t "handoff.continueOnDesktopText"
+
+  # Handoff ping interval
+  - !component as: VisibilityWrapper
+    visible: !expression "device.isMobile && flow.export.startedOnDesktop && !form.hasTags(['handoffBypass'])"
+    items:
+      - !component as: Trigger
+        load: !function |
+          flow.function.sendHandoffPing({timestamp: helper.dayjs().unix()});
+          analytics.event('Opened', { field: 'Handoff' });
+      - !component as: Interval
+        skipAwaited: true
+        tick: !function "return flow.refresh().then(() => flow.function.sendHandoffPing({timestamp: helper.dayjs().unix()}))"
+        interval: 3000

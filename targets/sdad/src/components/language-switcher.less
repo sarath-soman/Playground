@@ -1,0 +1,68 @@
+.CM-languageSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  .CM-select {
+    border: none;
+    font-weight: 600;
+    background: none;
+    margin: 0;
+    padding: 0;
+    height: 32px;
+    max-width: 90px;
+    cursor: pointer;
+    flex: 1;
+
+    select {
+      font-size: 12px;
+      padding: 0 35px 0 0;
+      @media(max-width: 900px) {
+        padding: 0 25px 0 0;
+      }
+    }
+
+    &__right {
+      display: none;
+    }
+
+    & .CM-select__button {
+      right: 20px;
+      @media(max-width: 900px) {
+        right: 15px;
+      }
+
+      &:before,
+      &:after {
+        background-color: var(--base-brand-color);
+      }
+    }
+
+    @media (min-width: 900px) {
+      top: 0;
+    }
+  }
+
+  .CM-save {
+    text-align: center;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--base-brand-color);
+    border: 1px solid var(--base-brand-color);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0 10px;
+    margin-left: 10px;
+
+    svg {
+      margin-right: 6px;
+
+      path {
+        fill: var(--base-brand-color);
+      }
+    }
+  }
+}

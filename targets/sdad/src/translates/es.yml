@@ -1,0 +1,195 @@
+welcome:
+  title: "Te damos la bienvenida!"
+  text: !html |
+    Estamos por comenzar tu proceso de verificación.
+    <br /><br />
+    Te solicitaremos información personal para poder completar tu registro.
+  subTitle: "Lo que necesitarás para continuar"
+  identityCard: "Documento de identidad"
+  mobilePhone: "Teléfono móvil"
+  email: "Acceso a tu correo electrónico"
+
+crypto:
+  title: "Proporciona la información de tu moneda digital"
+  text: "Por favor selecciona el tipo de moneda digital y proporciona tu dirección"
+  fields:
+    currency: "Tipo de Moneda Digital"
+    address: "Dirección de tu Moneda Digital"
+
+countrySelect:
+  title: "Selecciona tu país"
+  country: "País"
+
+processing:
+  title: "Espera unos segundos..."
+
+errorPage:
+  title: "Oops, algo falló"
+  button: "Por favor intenta de nuevo"
+
+months:
+  0: "Ene"
+  1: "Feb"
+  2: "Mar"
+  3: "Abr"
+  4: "May"
+  5: "Jun"
+  6: "Jul"
+  7: "Ago"
+  8: "Sep"
+  9: "Oct"
+  10: "Nov"
+  11: "Dic"
+
+videoKYC:
+  currentlyMissingFields: "Faltan campos requeridos:"
+
+errors:
+  countryRequired: "País es requerido"
+  imageBlurry: "La imagen parece borrosa. Por favor intenta de nuevo."
+  imageHasGlare: "La imagen tiene un brillo. Por favor intenta de nuevo."
+  imageGeneralFail: "La imagen no está completa. Por favor intenta nuevamente."
+  required: "- requerido"
+  invalidDate: "- fecha inválida"
+  invalidFormat: "- formato inválido"
+  invalidPhoneFormat: "- formato inválido"
+  invalidEmailFormat: "- formato inválido"
+  wrongFormat: "- formato inválido"
+  requiredField: "campo requerido"
+
+common:
+  buttonDisabled: " "
+  continue: "Continuar"
+  tryAgain: "Por favor intenta de nuevo."
+  back: "Atrás"
+  accept: "Acepto"
+  upload:
+    uploadParagraph: "Gracias, la velocidad de carga depende de tu conexión. Pronto terminamos."
+    document:
+      heading: "Por favor, haz click en el icono de la nube para subir tu documento."
+      paragraph: "Tamaño max: 3 MB. Formatos aceptados: JPG, PNG o PDF."
+
+tacAgreement:
+  label: "He leído y acepto los"
+  button: "Términos y Condiciones"
+
+gdprAgreement:
+  label: "Aceptó el procesamiento de mi aplicación por"
+  button: "Más información"
+  modal:
+    heading: "Propósito del procesamiento, Cumplimiento Normativo Duración de la
+      retención de datos"
+    description: "Estamos recopilando su información personal para verificar su
+      identidad,  realizar la diligencia debida adecuada requerida para cumplir
+      con los requisitos reglamentarios, crear su perfil en nuestra plataforma
+      para que pueda ver y modificar la información proporcionada según sea
+      necesario. Esta información se conservará en nuestro plataforma mientras
+      sea nuestro cliente y hasta 5 años para cumplir con los requisitos
+      reglamentarios."
+    additionalInformation: "Información adicional:"
+    company: "{company} (Data Controller)"
+    hide: "ocultar"
+    details: "detalles"
+    processorName: "GBG plc"
+    processorUrl: "https://gbgplc.com"
+    dataProcessor: "(Data processor)"
+
+handoff:
+  continueOnDesktopTitle: "Continúa en tu desktop"
+  continueOnDesktopText: "Podrás cambiar los detalles en tu desktop."
+  continueOnDesktopUploadedTitle: "Continúa en tu computadora."
+  continueOnDesktopUploadedText: "La imagen fue cargada, continúa en tu computadora."
+  mobileLabel: "Móvil"
+  waitingText: "Esperando su captura..."
+  smsText: "Hola, para capturar documentos y continuar con el registro, siga esta
+    URL: %url%"
+
+redirections:
+  acceptedMessage: !markdown "Registro exitoso. Gracias."
+  denyMessage: !markdown "Lo sentimos, no podemos crear una cuenta en este
+    momento, comuníquese con nuestro servicio de atención al cliente."
+  manualReviewMessage: !markdown "Estamos revisando su información y nos pondremos
+    en contacto con usted a la brevedad."
+  existingKycMessage: !markdown "Parece que ya te has registrado. Si cree que se
+    trata de un error, póngase en contacto con el servicio de atención al
+    cliente."
+  documentVerificationMessage: !markdown "Gracias, su solicitud está bajo revisión
+    y nos pondremos en contacto con usted en breve."
+  documentValidationMessage: !markdown "Enviar documentos para su verificación, esto podría llevar un tiempo."
+
+legal:
+  gdpr: !markdown |
+    # GDPR example header
+    Texto de GDPR aquí
+  tac: !markdown |
+    # TÉRMINOS
+
+    Estos Términos y condiciones constituyen un acuerdo legalmente vinculante realizado entre usted, ya sea personalmente o en nombre de una entidad ("usted") y [nombre de la entidad comercial] ("nosotros", "nos" o "nuestro"), con respecto a su acceso a y el uso del sitio web [nombre del sitio web.com], así como cualquier otro medio, canal de medios, sitio web móvil o aplicación móvil relacionada, vinculada o conectada de otro modo (colectivamente, el "Sitio").
+
+    Usted acepta que al acceder al Sitio, ha leído, entendido y acepta estar sujeto a todos estos Términos y Condiciones. Si no está de acuerdo con todos estos Términos y condiciones, se le prohíbe expresamente usar el Sitio y debe interrumpir su uso de inmediato.
+
+    Los términos y condiciones complementarios o los documentos que pueden publicarse en el Sitio de vez en cuando se incorporan expresamente aquí como referencia. Nos reservamos el derecho, a nuestro exclusivo criterio, de realizar cambios o modificaciones a estos Términos y condiciones en cualquier momento y por cualquier motivo.
+    Le avisaremos sobre cualquier cambio actualizando la fecha de "Última actualización" de estos Términos y condiciones, y usted renuncia a cualquier derecho a recibir un aviso específico de cada cambio.
+
+    Es su responsabilidad revisar periódicamente estos Términos y Condiciones para mantenerse informado de las actualizaciones. Usted estará sujeto a, y se considerará que ha sido informado y aceptado, los cambios en los Términos y condiciones revisados ​​por su uso continuado del Sitio después de la fecha de publicación de dichos Términos y condiciones revisados.
+
+    La información provista en el Sitio no está destinada a ser distribuida o utilizada por ninguna persona o entidad en ninguna jurisdicción o país donde dicha distribución o uso sería contrario a la ley o regulación o que nos sometería a cualquier requisito de registro dentro de dicha jurisdicción o país. .
+
+    En consecuencia, aquellas personas que elijan acceder al Sitio desde otros lugares lo hacen por su propia iniciativa y son los únicos responsables de cumplir con las leyes locales, en la medida en que las leyes locales sean aplicables.
+
+    # DERECHOS DE PROPIEDAD INTELECTUAL
+
+    A menos que se indique lo contrario, el Sitio es propiedad de nuestra propiedad y todo el código fuente, las bases de datos, la funcionalidad, el software, los diseños de sitios web, el audio, el video, el texto, las fotografías y los gráficos del Sitio (colectivamente, el "Contenido") y las marcas registradas, el servicio las marcas y los logotipos que contiene (las "Marcas") son de nuestra propiedad o están controlados por nosotros o están autorizados por nosotros, y están protegidos por las leyes de derechos de autor y marcas registradas y varios otros derechos de propiedad intelectual y leyes de competencia desleal de los Estados Unidos, jurisdicciones extranjeras y convenciones internacionales.
+
+    El Contenido y las Marcas se proporcionan en el Sitio "TAL CUAL" solo para su información y uso personal. Salvo que se indique expresamente en estos Términos y condiciones, ninguna parte del Sitio y ningún Contenido o Marcas pueden ser copiados, reproducidos, agregados, republicados, cargados, publicados, mostrados públicamente, codificados, traducidos, transmitidos, distribuidos, vendidos, autorizados o explotados de otro modo para cualquier propósito comercial, sin nuestro permiso previo por escrito.
+
+    Siempre que sea elegible para usar el Sitio, se le otorga una licencia limitada para acceder y usar el Sitio y para descargar o imprimir una copia de cualquier parte del Contenido al que haya obtenido acceso únicamente para su uso personal y no comercial. usar. Nos reservamos todos los derechos no otorgados expresamente a usted en y para el Sitio, el Contenido y las Marcas.
+
+    # SITIOS WEB Y CONTENIDO DE TERCEROS
+
+    El Sitio puede contener (o se le puede enviar a través del Sitio) enlaces a otros sitios web ("Sitios web de terceros"), así como artículos, fotografías, texto, gráficos, imágenes, diseños, música, sonido, video, información, aplicaciones , software y otro contenido o elementos que pertenezcan o se originen en terceros ("Contenido de terceros").
+
+    Dichos sitios web de terceros y el contenido de terceros no son investigados, monitoreados o verificados por nuestra precisión, idoneidad o integridad, y no somos responsables de los sitios web de terceros a los que se acceda a través del sitio o cualquier contenido de terceros publicado. en, disponible a través de, o instalado desde el Sitio, incluido el contenido, la precisión, lo ofensivo, las opiniones, la confiabilidad, las prácticas de privacidad u otras políticas de o contenidas en los Sitios web de terceros o el Contenido de terceros.
+
+    La inclusión, el enlace o el permiso para el uso o la instalación de sitios web de terceros o cualquier contenido de terceros no implica su aprobación o respaldo por nuestra parte. Si decide abandonar el Sitio y acceder a los Sitios web de terceros o usar o instalar cualquier Contenido de terceros, lo hace bajo su propio riesgo y debe tener en cuenta que estos Términos y condiciones ya no rigen.
+
+    Debe revisar los términos y políticas aplicables, incluidas las prácticas de privacidad y recopilación de datos, de cualquier sitio web al que navegue desde el Sitio o en relación con cualquier aplicación que use o instale desde el Sitio. Cualquier compra que realice a través de Third
+pages:
+  personal-details:
+    personalDetailsFirstName1:
+      label: First Name #generated
+    personalDetailsLastName2:
+      label: Last Name #generated
+    personalDetailsDateOfBirth3:
+      label: Date of Birth #generated
+    title: Información Personal #generated
+    description: Para comenzar, por favor proporciona tu información personal #generated
+  contact-details:
+    contactDetailsEmail1:
+      label: Email #generated
+    contactDetailsMobile2:
+      label: Mobile #generated
+    title: Información de Contacto #generated
+    description: Por favor, proporciona tu información de contacto. #generated
+  address:
+    title: Dirección #generated
+    description: Por favor, ingresa tu dirección para continuar. #generated
+    location:
+      label: Comienza por escribir tu dirección #generated
+    address:
+      label: Calle y número exterior #generated
+    address2:
+      label: Número interior #generated
+    postalCode:
+      label: Código Postal #generated
+    city:
+      label: Ciudad #generated
+    state:
+      label: Estado #generated
+    addressCountry:
+      label: País #generated
+    enterAddressManually: Ingresa tu dirección manualmente #generated
+    notFoundAddress: No la encontramos, escribe tu dirección manualmente #generated
+steps:
+  yourPersonalInformation: Your Personal Information #generated
+  submitYourApplication: Submit your Application #generated

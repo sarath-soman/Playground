@@ -1,0 +1,11 @@
+!component as: Fragment
+items:
+  - !component as: Trigger
+    load: !function |
+      (async function() {
+        if (!(device?.isMobile && flow?.export?.startedOnDesktop) && window?.checkEmbedRestrictions) {
+          try {
+            await window.checkEmbedRestrictions()
+          } catch(e) {}
+        }
+      })()

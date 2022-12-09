@@ -1,0 +1,13 @@
+components:
+  layout: !include ../layouts/base.yml
+items:
+  - !ref components: layout
+    items:
+      - !component as: div
+        className: "CM-cross"
+      - !component as: Heading
+        centered: true
+        items: !t "errorPage.title"
+      - !component as: SubmitButton
+        text: !t "errorPage.button"
+

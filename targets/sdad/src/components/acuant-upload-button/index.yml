@@ -1,0 +1,152 @@
+#
+# Required props:
+#  - name - name of document (eg. idCardFront)
+#  - type - type of document (eg. document)
+#  - text - button text
+#
+#
+!component as: Fragment
+items:
+  # initialize instance of SDK
+  - !component as: Trigger
+    load:
+      !function eval: |
+        if (!window.AcuantUpload) {
+          window.AcuantUploadHandler = (new Function(acuantUpload))()
+        }
+        if(!page.storage.get(`instance-${fieldName}-${documentType}.assureIdOAuth`)) {
+          flow.function.getAssureIdOAuthToken({assureIdRegion: globals.assureIdRegion, authType: "BASIC"}).then((res) => {
+            page.storage.set(`instance-${fieldName}-${documentType}.assureIdOAuth`, res.result)
+            if(!res.result.token || !res.result.url) {
+              console.error("Token or URL missing...")
+              return
+            }
+            page.storage.set(`instance-${fieldName}-${documentType}`,
+              new window.AcuantUploadHandler(fieldName, documentType, {
+                storageSet,
+                setVisited,
+                getFileHolder,
+                wrapByLoading,
+                changeValue,
+                analyticsCustomEvent,
+              }, {
+                disableImagePrevalidation,
+                credentials,
+                scriptSrc,
+                messages,
+                textOptions,
+                faceTextOptions,
+                onAccepted,
+                onImageCaptured,
+                onImageCropFailed,
+                onImageCropped,
+                onRejected,
+              }, res.result)
+            )
+          }, () => {
+            console.error("getAssureIdOAuthToken error: ", res)
+          })
+        }
+      # files
+      acuantUpload: !include 'acuant-upload.js'
+      # helpers
+      storageSet: !expression page.storage.set
+      setVisited:
+        !function eval: form.setVisited(fieldName)
+        fieldName: !property name
+      getFileHolder: !expression helper.getFileHolder
+      wrapByLoading: !expression app.wrapByLoading
+      changeValue: !expression form.changeValue
+      analyticsCustomEvent: !expression analytics.customEvent
+      # SDK options
+      fieldName: !property name
+      documentType: !property type
+      disableImagePrevalidation:
+        !property name: disableImagePrevalidation
+        default: !expression undefined
+      credentials:
+        !property name: credentials
+        default: !expression undefined
+      scriptSrc:
+        !property name: scriptSrc
+        default: !expression undefined
+      messageBlurry:
+        !property name: messageBlurry
+        default: !expression undefined
+      messageEnsure:
+        !property name: messageEnsure
+        default: !expression undefined
+      messageHasGlare:
+        !property name: messageHasGlare
+        default: !expression undefined
+      messageGeneralFail:
+        !property name: messageGeneralFail
+        default: !expression undefined
+      messages:
+        !property name: messages
+        default: !expression undefined
+      textOptions:
+        !property name: textOptions
+        default: !expression undefined
+      faceTextOptions:
+        !property name: faceTextOptions
+        default: !expression undefined
+      onAccepted:
+        !property name: onAccepted
+        default: !expression undefined
+      onImageCaptured:
+        !property name: onImageCaptured
+        default: !expression undefined
+      onImageCropFailed:
+        !property name: onImageCropFailed
+        default: !expression undefined
+      onImageCropped:
+        !property name: onImageCropped
+        default: !expression undefined
+      onRejected:
+        !property name: onRejected
+        default: !expression undefined
+  # Button renderer
+  - !component as: Button
+    disabled:
+      !expression eval: |
+        !page.storage.get(`instance-${fieldName}-${documentType}.initialized`) ||
+        page.storage.get(`instance-${fieldName}-${documentType}.initializing`)
+      fieldName: !property name
+      documentType: !property type
+    type: button
+    text: !property text
+    onClick:
+      !function eval: page.storage.get(`instance-${fieldName}-${documentType}`).openCamera()
+      fieldName: !property name
+      documentType: !property type
+
+  # selfie div
+  - !component as: div
+    !condition include: type === "selfie"
+    className: 'fileUpload acuant-camera'
+    id: acuant-face-capture-container
+    style:
+      display:
+        !expression eval: "page.storage.get(`instance-${fieldName}-${documentType}.cameraOpened`) ? 'block' : 'none'"
+        fieldName: !property name
+        documentType: !property type
+    items:
+      - !component as: div
+        className: 'fileUpload liveness-status'
+        items:
+          - !expression eval: page.storage.get(`instance-${fieldName}-${documentType}.livenessStatus`)
+            fieldName: !property name
+            documentType: !property type
+  # document div
+  - !component as: div
+    !condition include: type === "document"
+    className: 'fileUpload acuant-camera'
+    style:
+      display:
+        !expression eval: "page.storage.get(`instance-${fieldName}-${documentType}.cameraOpened`) ? 'block' : 'none'"
+        fieldName: !property name
+        documentType: !property type
+    items:
+      - !component as: div
+        id: 'acuant-camera'

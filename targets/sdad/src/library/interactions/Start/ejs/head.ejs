@@ -1,0 +1,236 @@
+<script>
+  const acuantConfig = {
+    path: './assets/'
+  };
+
+  /*
+  Utils
+  */
+  function isInIframe() {
+    try {
+      return window.self !== window.top
+    } catch (e) {
+      return true
+    }
+  }
+
+  function startApplication() {
+    if (!window.runApplication) {
+      window.onApplicationPrepared = function() {
+        window.runApplication();
+      }
+    } else {
+      window.runApplication();
+    }
+  }
+
+  function parseUrl(inputUrl) {
+    const EMPTY_STRING = ''
+    try {
+      const PROTOCOL_SEPARATOR = '//'
+      const COLON = ':'
+      const QUERY_SEPARATOR = '?'
+      const HASH = '#'
+
+      const protocolString = inputUrl.split(PROTOCOL_SEPARATOR)[0]
+      const protocol = protocolString ? protocolString.replace(COLON, EMPTY_STRING) : null
+      const urlStartIndex =  !protocol ?  PROTOCOL_SEPARATOR.length : protocol.length + `${COLON}${PROTOCOL_SEPARATOR}`.length
+
+      let url = inputUrl.substring(urlStartIndex)
+      const queryCharacterIndex = url.indexOf(QUERY_SEPARATOR)
+      url = queryCharacterIndex !== -1 ? url.substring(0, queryCharacterIndex) : url
+      const hashCharacterIndex = url.indexOf(HASH)
+      url = hashCharacterIndex !== -1 ? url.substring(0, hashCharacterIndex) : url
+
+      url = url.replace(/\/+$/, EMPTY_STRING);
+
+      return {
+          protocol,
+          url,
+      }
+    } catch(e) {
+      return {
+        protocol: null,
+        url: EMPTY_STRING,
+      }
+    }
+  }
+
+  function setError(message) {
+    setTimeout(() => document.body.innerHTML = message, 10)
+  }
+
+  async function sendParentAction(action, data) {
+    return new Promise((resolve, reject) => {
+      let watchDog;
+      const id = (Math.random() + 1).toString(36).substring(2);
+      const cb = e => {
+        if (e.data.id === id) {
+          if (e.data.error) {
+            throw new Error(e.data.error)
+          }
+          window.removeEventListener('message', cb)
+          clearTimeout(watchDog)
+          resolve(e.data.data)
+        }
+      }
+      window.addEventListener('message', cb)
+      window.parent.postMessage({ action, data, id }, '*')
+
+      watchDog = setTimeout(() => {
+        window.removeEventListener('message', cb)
+        reject('watchdog')
+      }, 100);
+    })
+  }
+
+  function getReferrerUrl() {
+    return window.location != window.parent.location ? document.referrer : document.location.href
+  }
+
+  function paramsToObject(entries) {
+    const result = {}
+    for (const [key, value] of entries) {
+      result[key] = value
+    }
+    return result
+  }
+
+  function getQueryParams(paramNames) {
+    const { searchParams } = new URL(window.location.href)
+    if (paramNames) {
+      return paramNames.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item]: searchParams.get(item),
+        }),
+        {},
+      )
+    }
+    return paramsToObject(searchParams.entries())
+  }
+
+  /*
+  DPF
+  */
+  function dfpCallback(error, json) {
+    if (error == null) {
+      window.dfp = JSON.stringify(json);
+    } else {
+      window.dfp = JSON.stringify(error);
+    }
+  }
+
+  function dfpTechnologyIndicator(dfptValue) {
+    window.dft = dfptValue;
+  }
+
+  async function checkEmbedRestrictions() {
+    const embedEnabled = JSON.parse("{%- globals?.integration?.embedEnabled || false %}")
+    const formRestricted = JSON.parse("{%- globals?.integration?.formRestricted || false %}")
+    const embedHostedUrl = "{%- globals?.integration?.hostedUrl %}"
+
+    if (!embedEnabled && isInIframe()) {
+      // embed is disabled, so stop loading app
+      setError("Application load restricted due to settings. Embed is not enabled.")
+      return;
+    }
+
+    if (embedEnabled) {
+      if (isInIframe()) {
+        if (embedHostedUrl) {
+
+          // this is hack, to be honest it's not best one, but if you can access window.parent, you should use local method
+          // to get location
+          let canAccessParent = false
+          try {
+            window.parent.location.url
+            canAccessParent = true
+          } catch(e) {}
+
+          const location = canAccessParent ? getReferrerUrl() : await sendParentAction('get-location', {})
+
+          // just location was not received
+          if (!location) {
+            setError("Application load restricted due to settings. Hosted url is not corresponding with enabled host url.")
+            return;
+          }
+
+          // is in frame
+          const hostUrl = parseUrl(location)
+          const enabledUrl = embedHostedUrl.split(',').map(i => parseUrl(i.trim()))
+          const valid = enabledUrl.find(i => {
+            if (hostUrl.url.indexOf(i.url) === 0) {
+              if (i.protocol && i.protocol !== hostUrl.protocol) {
+                return false
+              }
+              return true
+            }
+            return false
+          })
+
+          if (!valid) {
+            setError("Application load restricted due to settings. Hosted url is not corresponding with enabled host url.")
+            return;
+          }
+        }
+      } else if (formRestricted) {
+        // not in frame and form is restricted
+        setError("Application load restricted due to settings. Form funcionality is not enabled.")
+        return;
+      }
+    }
+  }
+
+  /*
+  Main
+  */
+  (async function() {
+    const geolocationDisable = JSON.parse("{%- globals?.general?.geolocationDisable || false %}")
+    const embedEnabled = JSON.parse("{%- globals?.integration?.embedEnabled || false %}")
+
+    window.DISABLE_AUTOLOAD = true
+
+    if (embedEnabled && isInIframe()) {
+      // check library
+      try {
+        await sendParentAction('verify-library', {})
+      } catch(e) {
+        console.error('Embedding form failed, embed.js is not loaded properly.')
+        setError("Application needs to have embed.js script loaded.");
+        return;
+      }
+    }
+
+    const { uuid, token, handoffid } = getQueryParams([
+      'uuid',
+      'token',
+      'handoffid',
+    ])
+
+    if (!uuid && !token && !handoffid) {
+      await checkEmbedRestrictions()
+    }
+
+    // TODO disable this fetch when geolocationDisable
+    return fetch('https://api.ipstack.com/check?access_key=9d833005680c8653fc07997fe9177034')
+      .then((r) => r.json())
+      .then((r) => {
+        if (r && typeof r === 'object') {
+          if (!geolocationDisable) {
+            window.COUNTRY = r.country_code;
+          }
+          window.IP = r.ip
+          window.IS_EU = r.location.is_eu;
+        }
+        startApplication();
+      })
+      .catch(() => {
+        startApplication();
+        window.IP_STACK_FAILED = true;
+      });
+  })();
+
+  window.checkEmbedRestrictions = checkEmbedRestrictions
+</script>
+<script type="text/javascript" src="//cdn1.identitymind.com/dfp-wrapper/d.js"></script>

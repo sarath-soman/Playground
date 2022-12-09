@@ -1,0 +1,368 @@
+title: sdad
+serverUrl: http://localhost:5005
+apiVersion: v1
+flowStartParameters: !expression |
+  (function() {
+    utils.getFieldUrlData();
+    let urlData = {};
+    ["bc","bfn","bln","bs","bsn","bz","dob","pbc","phn","tea","assn","man","tid"].forEach((key) => {
+      if (window._urlData_ && window._urlData_[key]) {
+        urlData[key] = window._urlData_[key];
+      }
+    })
+    return {
+      startedOnDesktop: device.isDesktop,
+      documentCountry: window?._urlData_?.doc_country || null,
+      documentType: window?._urlData_?.doc_type || null,
+      urlData: urlData,
+    }
+  })()
+analytics:
+  mixpanel: !expression "globals.mixpanelId"
+analyticsParams:
+  form_id: !expression "globals.formId"
+  environment: !expression "globals.ednaEnvironment || 'STG'"
+  page: !expression "page.name"
+  user_id: !expression "globals.userId"
+  ip_address: !expression "window.IP"
+  country_of_ip: !expression "window.COUNTRY"
+  internal: true
+  merchant_id: "1234"
+  os_version: !expression "device.osVersion"
+  overall_sessions: 1234
+  type_of_device: !expression "device.deviceType"
+  page_number: !expression "configuration.steps.terminated[0].findIndex((item) =>
+    item.uri === page.name) + 1"
+analyticsMapper:
+  timeOfPageEditing: "time_of_edition_sec"
+  timeOfFieldEditing: "time_of_edition_sec"
+  timesFieldChanged: "times_is_changed"
+mockData: !include ./mockdata.json
+flowExport: !include ./flowExport.json
+devTools: false
+loadingComponent: !include ./components/loader.yml
+errorPage: "error-page"
+url:
+  persistQuery: true
+  persistPathname: true
+styles:
+  - !include ./styles/index.less
+defaultLocale: en
+translates:
+  en: !include ./translates/en.yml
+favicon: "assets/favicon.png"
+studioSettings:
+  logo: assets/logo.png
+  name: sdad
+  country: US
+  group:
+    - 999
+  previewUrl: https://preview.acuantgo3-qa.com/KGR8zruPkgKbpu3D/4OoQfeiUDyQEKsoxtyl58NAb
+  s3uri: s3://preview.acuantgo3-qa.com/KGR8zruPkgKbpu3D/4OoQfeiUDyQEKsoxtyl58NAb
+  accountId: KGR8zruPkgKbpu3D
+  domain: preview.acuantgo3-qa.com
+  journeyId: 4OoQfeiUDyQEKsoxtyl58NAb
+pages:
+  welcome: !include ./pages/welcome--z9b2ek.generated.yml
+  personal-details: !include ./pages/personal-details--6szt69.generated.yml
+  contact-details: !include ./pages/contact-details--bfwyrg.generated.yml
+  address: !include ./pages/address-xxl9s7.generated.yml
+  edna-processing: !include ./pages/edna-processing--rxyzg2.generated.yml
+  done: !include ./pages/done-pob4ob.generated.yml
+  index: !include ./pages/index.yml
+  error-page: !include ./pages/error-page.yml
+formats:
+  date:
+    format: MM/DD/YYYY
+  number:
+    decimalSeparator: .
+    thousandsSeparator: ","
+    precision: 2
+  currency:
+    format: "%u%n"
+    unit: $
+  phone:
+    countryCode: "+1"
+    mask: 999 9999999
+globals:
+  general:
+    ednaProfile: DEFAULT
+    acuantLogoDisabled: false
+  accessibility:
+    enabled: false
+    showOnMobile: true
+  legal:
+    tacAgreementEnabled: false
+    gdprAgreementEnabled: false
+    tacAgreementType: local
+    tacAgreementUrl: null
+  regionalSettings: null
+  integration:
+    embedEnabled: false
+    formRestricted: false
+    jwtInUrlEnabled: false
+    repeatedCheckEnabled: false
+    webhookIncludeCountryName: country
+    jwtSecret: 455q1u6r1x1s4jr4b672b2u3v194b395
+  ednaEnvironment: STG
+  organizationId: 999
+  assureIdRegion: EU
+  formId: preview.acuantgo3-qa.com/KGR8zruPkgKbpu3D/4OoQfeiUDyQEKsoxtyl58NAb
+  userId: test
+  mixpanelId: e66fc206fb9a9d85edb642d28ec70b5d
+utils:
+  getFieldUrlData: !function |
+    if (url.query.data && !window._urlData_) {
+      let baseData = function (str) {
+        return decodeURIComponent(atob(str).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+      }(url.query.data);
+
+      if (baseData.charAt(0) === '?') {
+        baseData = baseData.slice(1);
+      }
+
+      baseData = baseData.split('&');
+      window._urlData_ = baseData.reduce((acc, value) => {
+        const keyValue = value.split('=');
+        return {
+          ...acc,
+          [keyValue[0].trim()]: keyValue[1].trim(),
+        };
+      }, {});
+
+      if (window._urlData_.dob) {
+        window._urlData_.dob = helper.dayjs(window._urlData_.dob, 'YYYY-MM-DD').format(configuration.formats.date.format);
+      }
+      if (window._urlData_.firstName) {
+        window._urlData_.bfn = window._urlData_.firstName;
+      }
+      if (window._urlData_.lastName) {
+        window._urlData_.bln = window._urlData_.lastName;
+      }
+      if (window._urlData_.email) {
+        window._urlData_.tea = window._urlData_.email;
+      }
+      if (window._urlData_.phone) {
+        window._urlData_.phn = window._urlData_.phone;
+      }
+      if (window._urlData_.docCountry) {
+        window._urlData_.doc_country = window._urlData_.docCountry;
+      }
+      if (window._urlData_.docType) {
+        window._urlData_.doc_type = window._urlData_.docType;
+      }
+      if (window._urlData_.documentCountry) {
+        window._urlData_.doc_country = window._urlData_.documentCountry;
+      }
+      if (window._urlData_.documentType) {
+        window._urlData_.doc_type = window._urlData_.documentType;
+      }
+    }
+    if (typeof field !== 'undefined') {
+      let name = field.name;
+      if ((window._urlData_ || {})[name]) {
+        return (window._urlData_ || {})[name]
+      }
+
+      if (field.ednaField) {
+        if (field.ednaType === 'basic' && field.ednaBasicName) {
+          name = field.ednaBasicName;
+        } else if (field.ednaType === 'custom' && field.ednaCustomName) {
+          name = field.ednaCustomName;
+        }
+      }
+      return (window._urlData_ || {})[name]
+    }
+    return undefined
+  generateSchema: !function |
+    const fieldTypes = {
+      text: 'string',
+      password: 'string',
+      integer: 'integer',
+      checkbox: 'boolean',
+      phone: 'string',
+      address: 'string',
+      date: 'string',
+      radio: 'string',
+      select: 'string',
+    };
+
+    const currentCountry = flow?.export?.country ? flow.export.country : (form?.data?.country ? form.data.country : window.COUNTRY);
+
+    let required = fields
+      .map((field) => {
+        if (field.required) {
+          if (field.onlyCountries?.length) {
+            if (field.onlyCountries.includes(currentCountry)) {
+              return field.name;
+            }
+          } else {
+            return field.name;
+          }
+        }
+        return null;
+      })
+      .filter((i) => !!i);
+
+    const properties = fields
+      .reduce((acc, field) => {
+        if (!field.name || !field.type) {
+            return acc;
+        }
+
+        acc[field.name] = {
+          ...(field.validation ? field.validation : null),
+          template: undefined,
+          type: fieldTypes[field.type],
+        };
+
+        if (field.type === 'text' || field.type === 'password') {
+          if (field.template === 'email') {
+            acc[field.name].errorMessage = {
+              pattern: '{field} ' + t('errors.invalidEmailFormat'),
+            };
+          }
+        } else if (field.type === 'phone') {
+          acc[field.name].pattern = '^\\+\\d+\\-\\d{3,30}$';
+          acc[field.name].errorMessage = {
+            pattern: '{field} ' + t('errors.invalidPhoneFormat'),
+          };
+        } else if (field.type === 'date') {
+          acc[field.name].pattern = undefined,
+          acc[field.name].moment = {
+            format: format.dateFormat,
+          };
+
+          if (field.limitByMinAge) {
+            acc[field.name].moment.validate = [{
+              test: 'isSameOrBefore',
+              value: helper.dayjs().startOf('day').subtract(globals?.general?.minAge || 0, 'years').toISOString(),
+            }];
+          }
+        }
+
+        return acc;
+      }, {});
+
+    const errorMessageProperties = fields
+      .reduce((acc, field) => {
+        if (field.type === 'date') {
+          acc[field.name] = '{field} ' + t('errors.invalidDate');
+        } else if (field.type === 'text' || field.type === 'password') {
+          acc[field.name] = '{field} ' + t('errors.invalidFormat');
+        }
+        return acc;
+      }, {});
+
+    const errorMessage = {
+      _: '{field} ' + t('errors.required'),
+      properties: errorMessageProperties,
+    };
+
+    if (typeof tacAgreement === 'boolean' && tacAgreement) {
+      required = required.concat(['tacAgreement']);
+      properties.tacAgreement = {
+        type: 'boolean',
+        const: true,
+      };
+    }
+
+    if (typeof gdprAgreement === 'boolean' && gdprAgreement) {
+      required = required.concat(['gdprAgreement']);
+      properties.gdprAgreement = {
+        type: 'boolean',
+        const: true,
+      };
+    }
+
+    return { required, properties, errorMessage };
+  getGdprAgreementVisibility: !function |
+    const europeanCountries = [
+      'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK',
+      'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE',
+      'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL',
+      'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
+    ];
+
+    const gdprAgreementEnabled = Boolean(globals?.legal?.gdprAgreementEnabled);
+    const euRegionOnly = Boolean(globals?.gdpr?.euRegionOnly);
+    const geoLocationDisable = Boolean(globals?.general?.geolocationDisable);
+    const country = String(flow?.export?.country ? flow.export.country : (form?.data?.country ? form.data.country : window.COUNTRY));
+
+    if (!gdprAgreementEnabled) {
+      return false;
+    }
+
+    if (euRegionOnly) {
+      return (geoLocationDisable || window.IP_STACK_FAILED) ? europeanCountries.includes(country) : window.IS_EU;
+    }
+
+    return true;
+  getAnalyticsFieldName: !function |
+    const result = arguments[0].replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1);
+  switchLanguage: !function |
+    const country = constants.COUNTRIES_FULL.find(c => c.alpha2Code === (arguments[0] || window.COUNTRY));
+    if (!country) return;
+    const language = country.languages.filter(c => Object.keys(configuration.translates).includes(c))[0];
+    if (!language) return;
+    changeLocale(language);
+  setLanguageFromUrl: !function |
+    const params = url.query;
+    if (params && params.language && configuration.translates[params.language]) {
+      changeLocale(params.language);
+
+      const paramsFiltered = Object.keys(params).reduce((result, key) => ({
+        ...result,
+        ...(key !== 'language' ? {[key]: params[key]} : {}),
+      }), {});
+      const query = new URLSearchParams(paramsFiltered).toString();
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.origin + window.location.pathname + query ? `?${query}` : '',
+      )
+    }
+
+  containsVerificationStep: !function |
+    const VERIFICATION_STEP_NAME = 'verifyYourIdentity'
+
+    const findStep = (steps, stepName) => {
+      const allSteps = steps.reduce((accumulator, current) => {
+        return [...accumulator, ...current]
+      }, [])
+
+      return allSteps.some((step) => step.stepName === stepName)
+    }
+
+    const { steps } = configuration
+    const isVerifiedInTerminated = findStep(steps.terminated, VERIFICATION_STEP_NAME)
+    const isVerifiedInOpen = findStep(steps.open, VERIFICATION_STEP_NAME)
+
+    return isVerifiedInTerminated || isVerifiedInOpen
+steps:
+  terminated:
+    - - token: -z9b2ek
+        uri: welcome
+        stepName: null
+      - token: -6szt69
+        uri: personal-details
+        stepName: yourPersonalInformation
+      - token: -bfwyrg
+        uri: contact-details
+        stepName: yourPersonalInformation
+      - token: xxl9s7
+        uri: address
+        stepName: yourPersonalInformation
+      - token: -rxyzg2
+        uri: edna-processing
+        stepName: submitYourApplication
+      - token: pob4ob
+        uri: done
+        stepName: submitYourApplication
+  open: []
+flowName: sdad
+flowIdName: sdad
+flowIdRevision: 7b94c4d18ee853c1eda2d4cc1848d4de84d01ab7d579b9b4f77224f6c579f348

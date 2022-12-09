@@ -1,0 +1,18 @@
+components:
+  languageSwitcher: !include ../components/language-switcher.yml
+  footer: !include ../components/footer.yml
+  handoff: !include ../components/handoff.yml
+  embed: !include ../components/embed.yml
+!component as: LayoutSingleColumn
+isLayout: true # Required for DS to understand how to change properties in nested layout items
+items:
+  !property name: items
+headerMiddle:
+  - !component as: div
+    className: "CM-headerLogo"
+headerRight:
+  - !ref components: languageSwitcher
+footer:
+  - !ref components: handoff
+  - !ref components: footer
+  - !ref components: embed

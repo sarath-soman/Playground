@@ -1,0 +1,72 @@
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+  fields:
+    cryptoType:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: "Cryptocurrency type"
+      blur:
+        eventName: "Input"
+        data:
+          field: "Cryptocurrency type"
+    cryptoAddress:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: "Cryptocurrency address"
+      blur:
+        eventName: "Input"
+        data:
+          field: "Cryptocurrency address"
+schema:
+  required:
+    - cryptoType
+    - cryptoAddress
+  properties:
+    cryptoAddress:
+      type: string
+      pattern: "^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$"
+      errorMessage:
+        pattern: !expression |
+          (function() {
+            return '{field} ' +t('errors.wrongFormat')
+          })()
+  errorMessage:
+    _: !expression |
+        (function() {
+          return '{field} ' +t('errors.required')
+        })()
+items:
+  - !ref components: layoutWithSidebar
+    activeStep: 3
+    items:
+      - !component as: Heading
+        items: !t "crypto.title"
+      - !component as: Paragraph
+        items: !t "crypto.text"
+      - !component as: Select
+        name: cryptoType
+        options: {%- JSON.stringify( ['Auroracoin', 'BeaverCoin', 'Biocoin', 'Bitcoin', 'BitcoinCash', 'BitcoinGold', 'Litecoin'].filter((currencyName) => ((attributes?.cryptocurrencies?.length) ? (attributes?.cryptocurrencies?.indexOf(currencyName) > -1) : true)).reduce((obj, currencyName) => ({ ...obj, [currencyName]: currencyName }), {}) ) %}
+        label: !t "crypto.fields.currency"
+      - !component as: Input
+        name: cryptoAddress
+        label: !t "crypto.fields.address"
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"

@@ -1,0 +1,24 @@
+components:
+  tacAgreementModal: !include ./tac-agreement.yml
+  gdprAgreementModal: !include ./gdpr-agreement.yml
+styles:
+  - !include ./footer.less
+!component as: div
+className: "CM-footer <%-typeof className !== 'undefined' ? className : ''%>"
+items:
+  - !component as: div
+    className: "CM-footer__content"
+    items:
+      - !component as: div
+        className: "CM-footer__left"
+        !condition omit: globals?.general?.acuantLogoDisabled
+        items:
+          - !component as: div
+            className: "CM-footer__powered-by"
+            items: "Powered by"
+          - !component as: div
+            className: "CM-footer__logo"
+      - !component as: div
+        className: "CM-footer__right"
+  - !ref components: tacAgreementModal
+  - !ref components: gdprAgreementModal

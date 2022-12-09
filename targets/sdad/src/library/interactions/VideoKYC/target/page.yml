@@ -1,0 +1,215 @@
+{%
+ /*
+ const dataSnippet =
+    "const email = 'test';" +
+    "const address = 'test';" +
+    "const firstName = 'test';" +
+    "const lastName = 'test';"
+  */
+
+ const dataSnippet =
+    "const email = flow?.export?.email ? flow.export.email : window._urlData_?.tea;" +
+    "const address = flow?.export?.address ? flow.export.address : window._urlData_?.address;" +
+    "const firstName = flow?.export?.firstName ? flow.export.firstName : window._urlData_?.bfn;" +
+    "const lastName =  flow?.export?.lastName ? flow.export.lastName : window._urlData_?.bln;";
+%}
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+analytics:
+  form:
+    initialized: "Form is opened"
+  page:
+    enter: "Page viewed"
+    leave: "Page completed"
+styles:
+  - !include ../styles/{%- attributes.uri %}-{%- token %}.less
+items:
+  {% if (isTerminal) { %}
+  - !component as: Trigger
+    load: !function |
+      page.storage.set('workflow-error', "Video verification interaction can't be the last page in flow, add some page after it.")
+  {% } %}
+  - !ref components: layoutWithSidebar
+    items:
+
+      # autosubmit
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          (function() {
+            {%- dataSnippet %}
+            return email && address && firstName && lastName && url?.query?.videoKycFinish === 'true';
+          })()
+        items:
+          - !component as: div
+            className: "CM-sandclock"
+          - !component as: Trigger
+            load: !function |
+              function removeUrlParam(param) {
+                  const search = '?' + window.location.search
+                    .replace('?', '')
+                    .split('&')
+                    .filter((i) => i !== param)
+                    .join('&')
+                  return window.location.origin + window.location.pathname + search + window.location.hash;
+              }
+            {% if (!isTerminal) { %}
+              setTimeout(() => {
+                history.pushState({}, null, removeUrlParam('videoKycFinish=true'));
+                form.changeValue('dummy', 'null');
+                form.submit();
+              }, 10);
+            {% } %}
+
+      # everything is valid
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          (function() {
+            {%- dataSnippet %}
+            return email && !url?.query?.videoKycFinish && !page.storage.get('workflow-error', null);
+          })()
+        items:
+          # title and heading
+          {% if(attributes?.name) { %}
+          - !component as: Heading
+            items: !t pages.{%- attributes.uri %}.title
+          {% } %}
+          {% if(attributes?.description) { %}
+          - !component as: Paragraph
+            items: !t pages.{%- attributes.uri %}.description
+          {% } %}
+          - !component as: ContentBox
+            items:
+              - !component as: div
+                className: "row"
+                items:
+                  - !component as: Icon
+                    kind: "doc-id"
+                  - !component as: div
+                    className: "iconText"
+                    items: !t "pages.{%- attributes.uri %}.prepare-document"
+              - !component as: VisibilityWrapper
+                visible: !expression "!device.isMobile"
+                items:
+                  - !component as: div
+                    className: "row"
+                    items:
+                      - !component as: Icon
+                        kind: "webcam"
+                      - !component as: div
+                        className: "iconText"
+                        items: !t "pages.{%- attributes.uri %}.prepare-device"
+              - !component as: div
+                className: "row"
+                items:
+                  - !component as: Icon
+                    kind: "wifi"
+                  - !component as: div
+                    className: "iconText"
+                    items: !t "pages.{%- attributes.uri %}.prepare-internet"
+
+          # agree
+          - !component as: Checkbox
+            name: consent
+            label:
+              - !component as: i
+                items: !t "pages.{%- attributes.uri %}.consent"
+
+          - !component as: Button
+            disabled: !expression "!form.data.consent"
+            text: !t "pages.{%- attributes.uri %}.start-video"
+            type: "button"
+            onClick: !function |
+              app.wrapByLoading((async function() {
+                function addUrlParam(param) {
+                    const search = (window.location.search ? window.location.search + '&' : '?') + param;
+                    return window.location.origin + window.location.pathname + search + window.location.hash
+                }
+
+                // test only BEGIN
+                /*
+                await new Promise((resolve, reject) => {
+                  setTimeout(resolve, 1000);
+                })
+                window.location.href = addUrlParam('videoKycFinish=true');
+                return;
+                */
+                // test only END
+
+                const currentCountry = flow?.export?.country ? flow.export.country : (form?.data?.country ? form.data.country : window.COUNTRY);
+                {%- dataSnippet %}
+
+                const url = 'https://customer.identity.tm/api/2.10/putOrder';
+
+                const params = {
+                  method: 'PUT',
+                  credentials: 'same-origin',
+                  mode: 'cors',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic NTAwODgzOkw2MiFyYndtejlBMA==',
+                    'Access-Control-Allow-Origin': 'localhost',
+                  },
+                  body: JSON.stringify({
+                    'Email': email,
+                    ...(address ? {'Address': address} : {}),
+                    'Country': currentCountry,
+                    ...(firstName ? {'Firstname': firstName} : {}),
+                    ...(lastName ? {'Surname': lastName} : {}),
+                    'Product': '12',
+                    'Add': '131072',
+                    'getVideoHashes': true,
+                    'RedirectURL': {
+                      'Success': addUrlParam('videoKycFinish=true'),
+                      'Abort': addUrlParam('videoKycFinish=true'),
+                    },
+                    'WebhookURL': {
+                      'OnFinal': 'https://callback.idm.com/im/verifier/identitytm/<merchant-name>/<merchant-app-id>?orderId=[OrderID]',
+                    },
+                  }),
+                };
+                const response = await fetch(url, params);
+                const json = await response.json();
+                window.location.href = json.VideoTargetLink;
+              })())
+      #something is missing
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          (function() {
+            {%- dataSnippet %}
+            return !email;
+          })()
+        items:
+          - !component as: div
+            className: "CM-cross"
+          - !component as: Heading
+            centered: true
+            items: Required data is missing
+          - !component as: Paragraph
+            className: centered
+            items: Video verification requires data to be prefilled from previous steps or from URL. Please check flow design.
+          - !component as: Paragraph
+            className: centered
+            items:
+              - !t "videoKYC.currentlyMissingFields"
+              - " "
+              - !component as: Strong
+                items:
+                  - !expression |
+                      (function() {
+                        {%- dataSnippet %}
+                        return [
+                          ...(!email ? ['Email'] : []),
+                        ].join(', ');
+                      })()
+      #some flow error
+      - !component as: VisibilityWrapper
+        visible: !expression "page.storage.get('workflow-error', null)"
+        items:
+          - !component as: div
+            className: "CM-cross"
+          - !component as: Heading
+            centered: true
+            items: Required data is missing
+          - !component as: Paragraph
+            className: centered
+            items: !expression "page.storage.get('workflow-error', null)"

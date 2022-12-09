@@ -1,0 +1,33 @@
+components:
+  layout: !include ../layouts/base.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data: { field: "Form" }
+  page:
+    enter:
+      eventName: "Viewed"
+      data: { field: "Page" }
+    leave:
+      eventName: "Completed"
+      data: { field: "Page" }
+items:
+  - !ref components: layout
+    items:
+      - !component as: Loader
+      - !component as: Heading
+        centered: true
+        items: !t "processing.title"
+      - !component as: Trigger
+        value: 1
+        load: !function |
+          setTimeout(() => {
+            if (!(device?.isMobile && flow?.export?.startedOnDesktop)) {
+              form.changeValue('dfp', window.dfp || '', false);
+              form.changeValue('dft', window.dft || '', false);
+              form.changeValue('ip', window.IP || '', false);
+              form.submit();
+            }
+          }, 3000)
+

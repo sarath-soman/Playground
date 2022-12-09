@@ -1,0 +1,196 @@
+uri: personal-details
+token: -6szt69
+components:
+  layoutWithSidebar: !include ../layouts/with-sidebar.yml
+  GenericField: !include ../components/generic-field.yml
+analytics:
+  form:
+    initialized:
+      eventName: "Opened"
+      data:
+        field: "Form"
+  page:
+    enter:
+      eventName: "Viewed"
+      data:
+        field: "Page"
+    leave:
+      eventName: "Completed"
+      data:
+        field: "Page"
+
+  fields:
+
+    personalDetailsFirstName1:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsFirstName1')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsFirstName1')"
+
+    personalDetailsLastName2:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsLastName2')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsLastName2')"
+
+    personalDetailsDateOfBirth3:
+      focus:
+        eventName: "Clicked"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsDateOfBirth3')"
+      blur:
+        eventName: "Input"
+        data:
+          field: !expression "utils.getAnalyticsFieldName('personalDetailsDateOfBirth3')"
+
+schema: !expression |
+  utils.generateSchema({
+    fields: [{"type":"text","name":"personalDetailsFirstName1","label":"First Name","required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"bfn","validation":{"template":"name","pattern":"^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"}},{"type":"text","name":"personalDetailsLastName2","label":"Last Name","required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"bln","validation":{"template":"name","pattern":"^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"}},{"type":"date","name":"personalDetailsDateOfBirth3","label":"Date of Birth","required":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"dob","limitByMinAge":true,"minAge":18}],
+    tacAgreement:  Boolean(globals?.legal?.tacAgreementEnabled),
+    gdprAgreement: utils.getGdprAgreementVisibility()
+  });
+defaults:
+
+  personalDetailsFirstName1: !expression |
+    utils.getFieldUrlData( {field: {"type":"text","name":"personalDetailsFirstName1","label":"First Name","required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"bfn","validation":{"template":"name","pattern":"^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"}} })
+
+  personalDetailsLastName2: !expression |
+    utils.getFieldUrlData( {field: {"type":"text","name":"personalDetailsLastName2","label":"Last Name","required":true,"blockWhenPrefilled":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"bln","validation":{"template":"name","pattern":"^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"}} })
+
+  personalDetailsDateOfBirth3: !expression |
+    utils.getFieldUrlData( {field: {"type":"date","name":"personalDetailsDateOfBirth3","label":"Date of Birth","required":true,"ednaField":true,"ednaType":"basic","ednaBasicName":"dob","limitByMinAge":true,"minAge":18} })
+
+items:
+  - !ref components: layoutWithSidebar
+    items:
+      # title and heading
+      - !component as: Heading
+        items: !t pages.personal-details.title
+
+      - !component as: Paragraph
+        items: !t pages.personal-details.description
+
+      # all inputs render
+      - !ref components: GenericField
+        field:
+          {
+            "type": "text",
+            "name": "personalDetailsFirstName1",
+            "label": "First Name",
+            "required": true,
+            "blockWhenPrefilled": true,
+            "ednaField": true,
+            "ednaType": "basic",
+            "ednaBasicName": "bfn",
+            "validation":
+              {
+                "template": "name",
+                "pattern": "^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"
+              }
+          }
+        uri: personal-details
+        minAge: 18
+
+      - !ref components: GenericField
+        field:
+          {
+            "type": "text",
+            "name": "personalDetailsLastName2",
+            "label": "Last Name",
+            "required": true,
+            "blockWhenPrefilled": true,
+            "ednaField": true,
+            "ednaType": "basic",
+            "ednaBasicName": "bln",
+            "validation":
+              {
+                "template": "name",
+                "pattern": "^[^0-9_!¡?÷?¿/\\\\+=@#$%ˆ&*(){}|~<>;:[\\]\\- ,]{2,}$"
+              }
+          }
+        uri: personal-details
+        minAge: 18
+
+      - !ref components: GenericField
+        field:
+          {
+            "type": "date",
+            "name": "personalDetailsDateOfBirth3",
+            "label": "Date of Birth",
+            "required": true,
+            "ednaField": true,
+            "ednaType": "basic",
+            "ednaBasicName": "dob",
+            "limitByMinAge": true,
+            "minAge": 18
+          }
+        uri: personal-details
+        minAge: 18
+
+      # agree with tac
+      - !component as: VisibilityWrapper
+        visible: !expression "globals?.legal?.tacAgreementEnabled"
+        items:
+          - !component as: Checkbox
+            name: tacAgreement
+            onChange: !expression |
+              (value) => {
+                form.changeValue('tacAgreement', value);
+                if (value) {
+                  analytics.event('Accepted', { field: 'Agreements' });
+                }
+              }
+            label:
+              - !component as: i
+                items: !t "tacAgreement.label"
+              - " "
+              - !component as: VisibilityWrapper
+                visible: !expression "globals?.legal?.tacAgreementType === 'local'"
+                items:
+                  - !component as: TagButton
+                    tag: tacAgreementModal
+                    text: !t "tacAgreement.button"
+                    onClick: !function "analytics.event('Clicked', { field: 'Agreements' });"
+              - !component as: VisibilityWrapper
+                visible: !expression "globals?.legal?.tacAgreementType === 'external'"
+                items:
+                  - !component as: a
+                    href: !expression "globals?.legal?.tacAgreementUrl"
+                    target: "_blank"
+                    items: !t "tacAgreement.button"
+                    onClick: !function "analytics.event('Clicked', { field: 'Agreements' });"
+
+      #gdpr agreement
+      - !component as: VisibilityWrapper
+        visible: !expression |
+          utils.getGdprAgreementVisibility()
+        items:
+          - !component as: Checkbox
+            name: gdprAgreement
+            onChange: !expression |
+              (value) => {
+                form.changeValue('gdprAgreement', value);
+                if (value) {
+                  analytics.event('Accepted', { field: 'GDPR' });
+                }
+              }
+            label:
+              - !component as: i
+                items: !t "gdprAgreement.label"
+              - " "
+              - !component as: TagButton
+                tag: gdprAgreementModal
+                text: !t "gdprAgreement.button"
+                onClick: !function "analytics.event('Clicked', { field: 'GDPR' });"
+
+      - !component as: SubmitButton
+        actionName: flowSubmit
+        text: !t "common.continue"

@@ -1,0 +1,201 @@
+welcome:
+  title: "Welcome!"
+  text: !html |
+    You are about to begin the document verification process.
+    <br /><br />
+    Before you begin, gather the following items:
+  subTitle: "Everything you need to continue"
+  identityCard: "Identity card"
+  mobilePhone: "Mobile phone"
+  email: "Access to your email"
+
+crypto:
+  title: "Enter your digital currency information"
+  text: "Please select the type of digital currency and the address"
+  fields:
+    currency: "Digital Currency Type"
+    address: "Digital Currency Address"
+
+countrySelect:
+  title: "Select your country"
+  country: "Country"
+
+processing:
+  title: "Please wait..."
+
+errorPage:
+  title: "Oops, something went wrong"
+  button: "Please retry"
+
+months:
+  0: "Jan"
+  1: "Feb"
+  2: "Mar"
+  3: "Apr"
+  4: "May"
+  5: "Jun"
+  6: "Jul"
+  7: "Aug"
+  8: "Sep"
+  9: "Oct"
+  10: "Nov"
+  11: "Dec"
+
+videoKYC:
+  currentlyMissingFields: "Currently missing fields:"
+
+errors:
+  countryRequired: "Country is required"
+  imageBlurry: "Image appears blurry. Please retry."
+  imageHasGlare: "Image has glare. Please retry."
+  imageGeneralFail: "Image can't be cropped, try another image."
+  required: "- required"
+  invalidDate: "- invalid date"
+  invalidFormat: "- invalid format"
+  invalidPhoneFormat: "- invalid phone format"
+  invalidEmailFormat: "- wrong email format"
+  wrongFormat: "- wrong format"
+  requiredField: "Required field"
+
+common:
+  buttonDisabled: " "
+  continue: "Continue"
+  tryAgain: "Please try again."
+  back: "Back"
+  accept: "I accept"
+  upload:
+    uploadParagraph: "Thank you. Upload speeds vary depending on your connection.
+      This shouldn’t take much longer."
+    document:
+      heading: "Please, click on the cloud icon to upload the document."
+      paragraph: "Maximum file size: 3 MB. Accepted formats: JPG, PNG or PDF."
+
+tacAgreement:
+  label: "I have read and agree with the"
+  button: "Terms & Conditions"
+
+gdprAgreement:
+  label: "I consent to the application processing by ACME Payments."
+  button: "Learn more"
+  modal:
+    heading: "Purpose of processing, Compliance Regulatory Data Retention Duration"
+    description: "We're collecting your personal information to verify your
+      identity, do appropriate due diligence required to meet regulatory
+      requirements, create your profile in our platform for you to see and
+      modify the provided information as needed. This information will retained
+      in our platform for as long as you're our customer and unto 5 years to
+      meet regulatory requirements."
+    additionalInformation: "Additional information:"
+    company: "{company} (Data Controller)"
+    hide: "hide"
+    details: "details"
+    processorName: "GBG plc"
+    processorUrl: "https://gbgplc.com"
+    dataProcessor: "(Data processor)"
+
+handoff:
+  continueOnDesktopTitle: "Please continue on your desktop."
+  continueOnDesktopText: "You will be able to switch your document details on your desktop."
+  continueOnDesktopUploadedTitle: "Please continue on your desktop"
+  continueOnDesktopUploadedText: "Your images are uploaded, you can continue on your desktop."
+  mobileLabel: "Mobile"
+  waitingText: "Waiting for capture..."
+  smsText: "Hello, to capture documents and continue registration please follow
+    this url: %url%"
+
+redirections:
+  acceptedMessage: !markdown "Registration successful. Thank you."
+  denyMessage: !markdown "Sorry we can’t create an account at this time please
+    contact client support."
+  manualReviewMessage: !markdown "We are checking your information and we will get back to you shortly."
+  existingKycMessage: !markdown "It seems that you have already signed up. If you
+    think this is an error please contact client support."
+  documentVerificationMessage: !markdown "Thank you, your application is under
+    review and we will get in touch with you shortly."
+  documentValidationMessage: !markdown "Submitting documents for verification, this could take a while."
+
+legal:
+  gdpr: !markdown |
+    # GDPR example header
+    This is GDPR text and all of this
+  tac: !markdown |
+    # AGREEMENT TO TERMS
+
+    These Terms and Conditions constitute a legally binding agreement made between you, whether personally or on behalf of an entity (“you”) and [business entity name] (“we,” “us” or “our”), concerning your access to and use of the [website name.com] website as well as any other media form, media channel, mobile website or mobile application related, linked, or otherwise connected thereto (collectively, the “Site”).
+
+    You agree that by accessing the Site, you have read, understood, and agree to be bound by all of these Terms and Conditions. If you do not agree with all of these Terms and Conditions, then you are expressly prohibited from using the Site and you must discontinue use immediately.
+
+    Supplemental terms and conditions or documents that may be posted on the Site from time to time are hereby expressly incorporated herein by reference. We reserve the right, in our sole discretion, to make changes or modifications to these Terms and Conditions at any time and for any reason.
+    We will alert you about any changes by updating the “Last updated” date of these Terms and Conditions, and you waive any right to receive specific notice of each such change.
+
+    It is your responsibility to periodically review these Terms and Conditions to stay informed of updates. You will be subject to, and will be deemed to have been made aware of and to have accepted, the changes in any revised Terms and Conditions by your continued use of the Site after the date such revised Terms and Conditions are posted.
+
+    The information provided on the Site is not intended for distribution to or use by any person or entity in any jurisdiction or country where such distribution or use would be contrary to law or regulation or which would subject us to any registration requirement within such jurisdiction or country.
+
+    Accordingly, those persons who choose to access the Site from other locations do so on their own initiative and are solely responsible for compliance with local laws, if and to the extent local laws are applicable.
+
+    # INTELLECTUAL PROPERTY RIGHTS
+
+    Unless otherwise indicated, the Site is our proprietary property and all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics on the Site (collectively, the “Content”) and the trademarks, service marks, and logos contained therein (the “Marks”) are owned or controlled by us or licensed to us, and are protected by copyright and trademark laws and various other intellectual property rights and unfair competition laws of the United States, foreign jurisdictions, and international conventions.
+
+    The Content and the Marks are provided on the Site “AS IS” for your information and personal use only. Except as expressly provided in these Terms and Conditions, no part of the Site and no Content or Marks may be copied, reproduced, aggregated, republished, uploaded, posted, publicly displayed, encoded, translated, transmitted, distributed, sold, licensed, or otherwise exploited for any commercial purpose whatsoever, without our express prior written permission.
+
+    Provided that you are eligible to use the Site, you are granted a limited license to access and use the Site and to download or print a copy of any portion of the Content to which you have properly gained access solely for your personal, non-commercial use. We reserve all rights not expressly granted to you in and to the Site, the Content and the Marks.
+
+    # THIRD-PARTY WEBSITES AND CONTENT
+
+    The Site may contain (or you may be sent via the Site) links to other websites (“Third-Party Websites”) as well as articles, photographs, text, graphics, pictures, designs, music, sound, video, information, applications, software, and other content or items belonging to or originating from third parties (“Third-Party Content”).
+
+    Such Third-Party Websites and Third-Party Content are not investigated, monitored, or checked for accuracy, appropriateness, or completeness by us, and we are not responsible for any Third-Party Websites accessed through the Site or any Third-Party Content posted on, available through, or installed from the Site, including the content, accuracy, offensiveness, opinions, reliability, privacy practices, or other policies of or contained in the Third-Party Websites or the Third-Party Content.
+
+    Inclusion of, linking to, or permitting the use or installation of any Third-Party Websites or any Third-Party Content does not imply approval or endorsement thereof by us. If you decide to leave the Site and access the Third-Party Websites or to use or install any Third-Party Content, you do so at your own risk, and you should be aware these Terms and Conditions no longer govern.
+
+    You should review the applicable terms and policies, including privacy and data gathering practices, of any website to which you navigate from the Site or relating to any applications you use or install from the Site. Any purchases you make through Third-Party Websites will be through other websites and from other companies, and we take no responsibility whatsoever in relation to such purchases which are exclusively between you and the applicable third party.
+    You agree and acknowledge that we do not endorse the products or services offered on Third-Party Websites and you shall hold us harmless from any harm caused by your purchase of such products or services. Additionally, you shall hold us harmless from any losses sustained by you or harm caused to you relating to or resulting in any way from any Third-Party Content or any contact with Third-Party Websites.
+
+    # GOVERNING LAW
+
+    These Terms and Conditions and your use of the Site are governed by and construed in accordance with the laws of the State of [name of state] applicable to agreements made and to be entirely performed within the State/Commonwealth of [name of state], without regard to its conflict of law principles.
+
+    # CONTACT US
+
+    In order to resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at our website.
+pages:
+  personal-details:
+    title: Personal Details #generated
+    description: To get started, please provide some basic information about yourself. #generated
+    personalDetailsFirstName1:
+      label: First Name #generated
+    personalDetailsLastName2:
+      label: Last Name #generated
+    personalDetailsDateOfBirth3:
+      label: Date of Birth #generated
+  contact-details:
+    title: Contact Details #generated
+    description: Please provide some additional information about yourself. #generated
+    contactDetailsEmail1:
+      label: Email #generated
+    contactDetailsMobile2:
+      label: Mobile #generated
+  address:
+    title: Address #generated
+    description: Please type your address and select it from the list to continue. #generated
+    location:
+      label: Start typing your street and number #generated
+    address:
+      label: Address line 1 #generated
+    address2:
+      label: Address line 2 #generated
+    postalCode:
+      label: Postcode #generated
+    city:
+      label: City #generated
+    state:
+      label: State #generated
+    addressCountry:
+      label: Country #generated
+    enterAddressManually: Enter address manually #generated
+    notFoundAddress: Not found, enter address manually #generated
+steps:
+  yourPersonalInformation: Your Personal Information #generated
+  submitYourApplication: Submit your Application #generated

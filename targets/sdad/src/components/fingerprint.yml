@@ -1,0 +1,8 @@
+!component as: Fragment
+items:
+  - !component as: Trigger
+    load: !function |
+      try {
+        form.changeValue('dfp', window.dfp || '', false);
+        form.changeValue('dft', window.dft || '', false);
+      } catch(e) { }

@@ -1,0 +1,54 @@
+{
+  "default": {
+    "welcome": {
+      "country": "CZ"
+    },
+    "personal-details": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "dateOfBirth": "01/01/2003",
+      "terms": true
+    },
+    "contact-details": {
+      "email": "test@test.com",
+      "mobile": "+44-123123123"
+    },
+    "digital-currency-details": {
+      "cryptoType": "Auroracoin",
+      "cryptoAddress": "1234123412312341234123412341"
+    },
+    "address": {
+      "location": {
+        "formattedAddress": "12300 Bermuda Rd, Henderson, NV 89044, USA",
+        "authorization": null,
+        "locality": "Henderson",
+        "sublocality": null,
+        "neighborhood": null,
+        "area1": "Nevada",
+        "area2": "Clark County",
+        "area3": null,
+        "area4": null,
+        "areas": ["Nevada", "Clark County"],
+        "street": "Bermuda Road",
+        "postalCode": "89044",
+        "postalTown": null,
+        "country": "United States",
+        "countryCode": "US",
+        "premise": null,
+        "streetNumber": "12300",
+        "placeId": "ChIJdcY944nNyIARku_7JVBhBSo",
+        "lat": 35.9649221,
+        "lng": -115.1519014
+      },
+      "address": "Bermuda Road 12300",
+      "psc": "89044",
+      "city": "Clark County",
+      "state": "Nevada",
+      "addressCountry": "US"
+    },
+    "document-type-verification": {
+      "documentCountry": "CZ",
+      "documentType": "drivers-license"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "sdad",
+  "version": "1.0.50",
+  "description": "sdad Onboarding",
+  "scripts": {
+    "build": "hub-client build",
+    "development": "hub-client dev",
+    "start": "npm run development"
+  },
+  "author": "Zenoo",
+  "private": true,
+  "license": "PRIVATE",
+  "devDependencies": {
+    "@zenoo/hub-client-application": "1.17.1"
+  }
+}
